@@ -29,3 +29,8 @@ env/
 
 # Azure Functions
 local.settings.json
+
+# DataNexus_Web (Node.js)
+DataNexus_Web/node_modules/
+DataNexus_Web/.env
+DataNexus_Web/*.log

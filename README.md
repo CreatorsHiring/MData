@@ -49,7 +49,28 @@ A production-grade, scalable data marketplace for the Microsoft Imagine Cup 2026
     func azure functionapp publish <YOUR_FUNCTION_APP_NAME>
     ```
 
-## 3. Architecture Overview
+## 3. Setup DataNexus_Web (Hybrid Portal)
+
+1.  **Prerequisites**: Node.js & npm installed.
+2.  **Install Dependencies**:
+    ```bash
+    cd DataNexus_Web
+    npm install
+    ```
+3.  **Environment Variables**:
+    - Create a `.env` file in `DataNexus_Web/` with:
+      - `COSMOS_ENDPOINT`: Your Azure Cosmos DB endpoint.
+      - `COSMOS_KEY`: Your Azure Cosmos DB primary key.
+      - `PORT`: (Optional) Port to run on, defaults to 3000.
+4.  **Run**:
+    ```bash
+    npm start
+    ```
+    - The portal will be available at `http://localhost:3000`.
+    - Routes: `/` (Landing), `/User/dashboard.html` (Contributor), `/Agency/dashboard.html` (Agency).
+    - **Authentication**: Uses real Azure Cosmos DB credentials (SHA256 salted hash).
+
+## 4. Architecture Overview
 
 ### Frontend
 
