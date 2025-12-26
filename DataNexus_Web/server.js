@@ -122,7 +122,7 @@ app.get("/api/stats", async (req, res) => {
 
     const querySpec = {
       query:
-        "SELECT c.id, c.payout, c.quality_score, c.original_name, c.upload_timestamp, c.sold_to FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
+        "SELECT c.id, c.payout, c.quality_score, c.original_name, c.upload_timestamp, c.sold_to, c.transaction_date FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
       parameters: [{ name: "@userId", value: userId }],
     };
 
@@ -134,13 +134,34 @@ app.get("/api/stats", async (req, res) => {
     let totalScore = 0;
     const history = [];
 
+    // Initialize map for last 30 days revenue
+    const dailyMap = {};
+    const today = new Date();
+    for (let i = 0; i < 30; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      dailyMap[`${yyyy}-${mm}-${dd}`] = 0; // Initialize with 0
+    }
+
     items.forEach((item) => {
       const payout = item.payout || 0;
       const score = item.quality_score || 0;
       const isSold = !!item.sold_to;
+      const userShare = isSold ? payout * 0.8 : 0;
 
       if (isSold) {
-        totalEarnings += payout * 0.8; // 80% split
+        totalEarnings += userShare;
+
+        // Populate chart data
+        if (item.transaction_date) {
+          const tDate = item.transaction_date.split("T")[0];
+          if (dailyMap.hasOwnProperty(tDate)) {
+            dailyMap[tDate] += userShare;
+          }
+        }
       }
       totalScore += score;
 
@@ -150,7 +171,7 @@ app.get("/api/stats", async (req, res) => {
           ? item.upload_timestamp.split("T")[0]
           : "N/A",
         quality: score,
-        earnings: isSold ? `$${(payout * 0.8).toFixed(2)}` : "$0.00",
+        earnings: isSold ? `$${userShare.toFixed(2)}` : "$0.00",
         status: isSold ? "Sold" : "Pending",
       });
     });
@@ -158,11 +179,19 @@ app.get("/api/stats", async (req, res) => {
     const avgQuality =
       items.length > 0 ? (totalScore / items.length).toFixed(1) : 0;
 
+    // Convert dailyMap to sorted arrays for chart
+    const sortedDates = Object.keys(dailyMap).sort();
+    const chartData = sortedDates.map((date) => ({
+      date,
+      amount: parseFloat(dailyMap[date].toFixed(2)),
+    }));
+
     res.json({
       earnings: `$${totalEarnings.toFixed(2)}`,
       quality: `${avgQuality}%`,
       total_uploads: items.length,
       history: history,
+      revenue_analytics: chartData,
     });
   } catch (error) {
     console.error("Stats Error:", error);
@@ -172,6 +201,7 @@ app.get("/api/stats", async (req, res) => {
       quality: "0%",
       total_uploads: 0,
       history: [],
+      revenue_analytics: [],
     });
   }
 });

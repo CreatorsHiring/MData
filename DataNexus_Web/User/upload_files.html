@@ -325,7 +325,7 @@
             />
           </div>
         </header>
-        <div class="flex-1 overflow-y-auto pb-32 md:pb-32 scroll-smooth">
+        <div class="flex-1 overflow-y-auto scroll-smooth">
           <div
             class="max-w-7xl mx-auto w-full px-4 md:px-8 py-6 md:py-10 space-y-6 md:space-y-8 animate-fade-in"
           >
@@ -479,7 +479,8 @@
                 >
               </div>
             </div>
-            <div class="flex items-start gap-3 px-1">
+            <!-- Terms of Service Checkbox with increased spacing -->
+            <div class="flex items-start gap-3 px-1 mt-8">
               <div class="relative flex items-center pt-0.5">
                 <input
                   class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1C2433] checked:border-primary-500 checked:bg-primary-500 transition-all focus:ring-offset-0 focus:ring-2 focus:ring-primary-500/50"
@@ -495,19 +496,18 @@
                 class="text-sm text-gray-600 dark:text-gray-400 leading-snug cursor-pointer select-none"
                 for="legal"
               >
-                I certify that I own the rights to this content and it complies
-                with the
+                I certify that the content complies and I agree to the
                 <a
-                  class="text-primary-500 hover:text-primary-600 underline decoration-primary-500/30 underline-offset-2"
-                  href="#"
+                  id="tos-link"
+                  class="text-primary-500 hover:text-primary-600 underline decoration-primary-500/30 underline-offset-2 cursor-pointer"
                   >Terms of Service</a
                 >.
               </label>
             </div>
           </div>
-        </div>
+
         <div
-          class="absolute bottom-0 left-0 right-0 glass border-t border-gray-200/50 dark:border-white/5 p-4 md:px-8 md:py-5 z-30"
+          class="glass border-t border-gray-200/50 dark:border-white/5 p-4 md:px-8 md:py-5 mt-8"
         >
           <div
             class="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4"
@@ -536,13 +536,58 @@
                 <span class="block font-bold text-emerald-500">70%</span>
               </div>
             </div>
-            <button id="upload-btn" class="w-full md:w-auto flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-bold h-12 px-8 text-base shadow-lg shadow-primary-500/25 active:scale-[0.98] transition-all">
+            <button id="upload-btn" disabled class="w-full md:w-auto flex items-center justify-center gap-2 rounded-xl font-bold h-12 px-8 text-base transition-all disabled:bg-gray-300 disabled:dark:bg-gray-700 disabled:text-gray-500 disabled:dark:text-gray-400 disabled:cursor-not-allowed disabled:opacity-60 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white shadow-lg shadow-primary-500/25 active:scale-[0.98]">
               <span>Upload &amp; Submit</span>
               <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
             </button>
           </div>
         </div>
+        </div>
       </main>
+      <!-- Terms of Service Modal -->
+      <div id="tos-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
+          <div class="flex items-center justify-between p-6 border-b border-white/10">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Terms of Service</h2>
+            <button id="close-tos" class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors">
+              <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">close</span>
+            </button>
+          </div>
+          <div class="overflow-y-auto p-6 text-sm text-gray-700 dark:text-gray-300 space-y-4">
+            <div>
+              <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">1. User Submissions & Grant of Rights</h3>
+              <p>Users may upload content ("Submitted Data") including but not limited to Photos, Documents, Audio, Video, and Code. By submitting, you represent that you hold all necessary rights and that the content is not subject to any third-party claims.</p>
+            </div>
+            <div>
+              <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">2. Irrevocable Ownership Transfer</h3>
+              <p class="mb-2">By clicking "Accept" and uploading data, you hereby irrevocably assign and transfer all right, title, and interest in the Submitted Data to MData. This includes all Intellectual Property rights for commercial and non-commercial exploitation globally.</p>
+              <p class="mb-2"><strong>Waiver of Moral Rights:</strong> You waive any "moral rights" or attribution rights regarding the data.</p>
+              <p><strong>Non-Revocable:</strong> Once data is processed and the user is credited, the submission cannot be deleted or revoked, as it may already be integrated into immutable AI training sets.</p>
+            </div>
+            <div>
+              <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">3. Responsible AI & Content Safety</h3>
+              <p class="mb-2">You agree to only submit data that is safe and legal. The Platform uses AI-driven safety filters (Azure AI Content Safety) to scan for:</p>
+              <ul class="list-disc list-inside space-y-1 ml-4">
+                <li>Malware or malicious code.</li>
+                <li>Inappropriate, hateful, or illegal imagery.</li>
+                <li>Personally Identifiable Information (PII) that violates privacy laws (GDPR/DPDP).</li>
+              </ul>
+              <p class="mt-2">Submissions failing these checks will be rejected without payment.</p>
+            </div>
+            <div>
+              <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">4. Compensation & Revenue Share</h3>
+              <p class="mb-2">The Platform operates on a 70/30 Revenue Share model.</p>
+              <p class="mb-2"><strong>Earnings:</strong> Users are entitled to 70% of the price allotted to their specific file once it is included in a dataset successfully purchased by an Agency.</p>
+              <p><strong>Finality:</strong> Payment amounts are calculated based on the "Quality Index" generated by the Platform's AI.</p>
+            </div>
+          </div>
+          <div class="p-6 border-t border-white/10 flex justify-end">
+            <button id="close-tos-btn" class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-colors">
+              I Understand
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
     <script>
       const sidebar = document.getElementById("sidebar");
@@ -658,13 +703,47 @@
             });
         }
 
+        // Terms of Service Modal
+        const tosModal = document.getElementById("tos-modal");
+        const tosLink = document.getElementById("tos-link");
+        const closeTosBtn = document.getElementById("close-tos-btn");
+        const closeTosX = document.getElementById("close-tos");
+
+        tosLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          tosModal.classList.remove("hidden");
+          tosModal.classList.add("flex");
+        });
+
+        closeTosBtn.addEventListener("click", () => {
+          tosModal.classList.add("hidden");
+          tosModal.classList.remove("flex");
+        });
+
+        closeTosX.addEventListener("click", () => {
+          tosModal.classList.add("hidden");
+          tosModal.classList.remove("flex");
+        });
+
+        tosModal.addEventListener("click", (e) => {
+          if (e.target === tosModal) {
+            tosModal.classList.add("hidden");
+            tosModal.classList.remove("flex");
+          }
+        });
+
+        // Enable/Disable Upload Button based on checkbox
+        const termsCheckbox = document.getElementById("legal");
+        termsCheckbox.addEventListener("change", () => {
+          uploadBtn.disabled = !termsCheckbox.checked;
+        });
+
         // Upload Process
         uploadBtn.addEventListener("click", async () => {
           if (selectedFiles.length === 0)
             return alert("Please select files first.");
           
-          const termsCheckbox = document.getElementById("legal");
-          if (!termsCheckbox || !termsCheckbox.checked) {
+          if (!termsCheckbox.checked) {
             return alert("Please accept the Terms of Service before uploading.");
           }
 

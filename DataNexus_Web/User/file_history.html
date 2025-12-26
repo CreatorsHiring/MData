@@ -319,17 +319,7 @@
           </p>
         </div>
         <div class="flex items-center gap-4">
-          <div class="relative hidden lg:block group">
-            <span
-              class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-primary"
-              >search</span
-            >
-            <input
-              class="pl-10 pr-4 py-2.5 rounded-xl bg-white/50 dark:bg-black/20 border border-transparent focus:border-primary/50 focus:bg-white dark:focus:bg-black/40 text-sm focus:ring-4 focus:ring-primary/10 w-64 placeholder-slate-500 dark:text-white transition-all shadow-sm"
-              placeholder="Search files, tags..."
-              type="text"
-            />
-          </div>
+
           <a
             href="upload_files.html"
             class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-blue-500/30 flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
@@ -535,20 +525,7 @@
               </label>
             </div>
             <div class="flex items-center gap-3 w-full lg:w-auto">
-              <div class="relative w-full lg:w-48 group">
-                <select
-                  class="w-full appearance-none bg-white/50 dark:bg-black/20 border border-transparent rounded-xl py-2 pl-3 pr-10 text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-black/40 transition-all cursor-pointer"
-                >
-                  <option>Newest First</option>
-                  <option>Oldest First</option>
-                  <option>Highest Earnings</option>
-                  <option>Quality Score</option>
-                </select>
-                <span
-                  class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[20px]"
-                  >sort</span
-                >
-              </div>
+
               <button
                 class="p-2 text-slate-500 hover:text-slate-800 dark:hover:text-white bg-white/50 dark:bg-white/5 rounded-xl transition-colors lg:hidden"
               >
@@ -558,6 +535,7 @@
                 class="hidden lg:flex bg-white/50 dark:bg-white/5 rounded-xl p-1 gap-1"
               >
                 <button
+                  id="btn-view-grid"
                   class="p-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-primary"
                 >
                   <span class="material-symbols-outlined text-[20px]"
@@ -565,6 +543,7 @@
                   >
                 </button>
                 <button
+                  id="btn-view-list"
                   class="p-1.5 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800 text-slate-400 transition-colors"
                 >
                   <span class="material-symbols-outlined text-[20px]"
@@ -608,6 +587,8 @@
       overlay.addEventListener("click", toggleSidebar);
 
       // --- Real Data Logic ---
+      let globalFiles = []; // Store fetched files
+
       document.addEventListener("DOMContentLoaded", async () => {
         const userStr = localStorage.getItem("user");
         if (!userStr) {
@@ -623,7 +604,7 @@
         try {
             // Fetch Files
             const res = await fetch(`/api/files?userId=${user.id}`);
-            const files = await res.json();
+            globalFiles = await res.json();
             
             // Fetch Stats for Cards
             const statsRes = await fetch(`/api/stats?userId=${user.id}`);
@@ -632,21 +613,110 @@
             // Update Stats Cards
             document.getElementById("history-earnings").textContent = stats.earnings;
             // Calculate Files Sold from actual sold files
-            const soldCount = files.filter(f => f.sold_to).length;
+            const soldCount = globalFiles.filter(f => f.sold_to).length;
             document.getElementById("history-sold").textContent = soldCount;
             // Display quality as is (it's already a percentage/100 value)
             const qualityPercent = parseFloat(stats.quality) || 0;
             document.getElementById("history-quality").textContent = Math.round(qualityPercent);
 
-            
-            fileGrid.innerHTML = "";
+            // Initial Render
+            renderFiles(globalFiles);
 
-            if (files.length === 0) {
-                fileGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">No files found. Upload some!</div>`;
-                return;
+            // --- Event Listeners ---
+            
+            // Status Filters (Radios)
+            const statusRadios = document.getElementsByName('status');
+            statusRadios.forEach(radio => {
+                radio.addEventListener('change', filterAndRender);
+            });
+
+
+
+            // View Toggles
+            const btnGrid = document.getElementById('btn-view-grid');
+            const btnList = document.getElementById('btn-view-list');
+
+            if (btnGrid) {
+                btnGrid.addEventListener('click', () => setView('grid'));
+            }
+            if (btnList) {
+                btnList.addEventListener('click', () => setView('list'));
             }
 
-            files.forEach((file, index) => {
+        } catch (error) {
+            console.error(error);
+            fileGrid.innerHTML = `<div class="col-span-full text-red-500">Error loading files.</div>`;
+        }
+      });
+
+      function filterAndRender() {
+          const statusRadios = document.getElementsByName('status');
+          let status = 'all';
+          for (const r of statusRadios) {
+              if (r.checked) {
+                  status = r.value;
+                  break;
+              }
+          }
+
+          let filtered = [...globalFiles];
+
+          // Filter
+          if (status === 'purchased') {
+              filtered = filtered.filter(f => f.sold_to);
+          } else if (status === 'pending') {
+              filtered = filtered.filter(f => !f.sold_to && !f.rejected); // assuming no 'rejected' flag yet, but logic stands
+          } else if (status === 'rejected') {
+              filtered = filtered.filter(f => f.rejected); // Mock logic if rejected exists
+          }
+
+          // Sort (Newest First)
+          filtered.sort((a, b) => {
+              const dateA = new Date(a.upload_timestamp || 0).getTime();
+              const dateB = new Date(b.upload_timestamp || 0).getTime();
+              return dateB - dateA;
+          });
+
+          renderFiles(filtered);
+      }
+
+      function setView(view) {
+          const fileGrid = document.getElementById("file-grid");
+          const btnGrid = document.getElementById('btn-view-grid');
+          const btnList = document.getElementById('btn-view-list');
+
+          if (view === 'grid') {
+              fileGrid.classList.remove('grid-cols-1');
+              fileGrid.classList.add('md:grid-cols-2', 'xl:grid-cols-3');
+              
+              btnGrid.classList.remove('bg-white/50', 'text-slate-400'); // inactive style removal
+              btnGrid.classList.add('bg-white', 'text-primary', 'shadow-sm', 'dark:bg-slate-700'); // active style
+              
+              btnList.classList.remove('bg-white', 'text-primary', 'shadow-sm', 'dark:bg-slate-700'); 
+              btnList.classList.add('bg-white/50', 'text-slate-400', 'dark:bg-transparent'); 
+              btnList.parentElement.classList.add('bg-white/50', 'dark:bg-white/5'); // container bg
+          } else {
+              fileGrid.classList.remove('md:grid-cols-2', 'xl:grid-cols-3');
+              fileGrid.classList.add('grid-cols-1');
+              
+              btnList.classList.remove('bg-white/50', 'text-slate-400', 'dark:bg-transparent');
+              btnList.classList.add('bg-white', 'text-primary', 'shadow-sm', 'dark:bg-slate-700');
+              
+              btnGrid.classList.remove('bg-white', 'text-primary', 'shadow-sm', 'dark:bg-slate-700');
+              btnGrid.classList.add('bg-white/50', 'text-slate-400', 'dark:bg-transparent');
+          }
+      }
+
+      function renderFiles(files) {
+          const fileGrid = document.getElementById("file-grid");
+          fileGrid.innerHTML = "";
+
+          if (files.length === 0) {
+              fileGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">No files found.</div>`;
+              return;
+          }
+
+          files.forEach((file, index) => {
                 // Determine icon/type
                 let fileType = "FILE";
                 let icon = "description";
@@ -676,7 +746,7 @@
                 const qualityScore = file.quality_score ? `${file.quality_score}/100` : "--";
 
                 const cardHtml = `
-                <div class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up" style="animation-delay: ${index * 0.1}s">
+                <div class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up" style="animation-delay: ${index * 0.05}s">
                   <div class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden flex items-center justify-center">
                     <div class="absolute inset-0 bg-gradient-to-tr ${bgGradient} opacity-90 group-hover:scale-110 transition-transform duration-700"></div>
                     <span class="material-symbols-outlined text-white text-6xl relative z-10 opacity-80">${icon}</span>
@@ -717,12 +787,7 @@
                 `;
                 fileGrid.insertAdjacentHTML('beforeend', cardHtml);
             });
-
-        } catch (error) {
-            console.error(error);
-            fileGrid.innerHTML = `<div class="col-span-full text-red-500">Error loading files.</div>`;
-        }
-      });
+      }
     </script>
   </body>
 </html>

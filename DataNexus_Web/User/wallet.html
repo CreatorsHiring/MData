@@ -14,6 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
       tailwind.config = {
@@ -305,14 +306,6 @@
         </div>
         <div class="flex items-center gap-3">
           <button
-            class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors relative"
-          >
-            <span class="material-symbols-outlined">notifications</span>
-            <span
-              class="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-[#0B0E14]"
-            ></span>
-          </button>
-          <button
             class="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors border border-white/10"
           >
             <span class="material-symbols-outlined text-[20px]"
@@ -430,62 +423,27 @@
                 class="bg-black/20 rounded-lg p-1 flex border border-white/5 backdrop-blur-md"
               >
                 <button
-                  class="px-4 py-1.5 text-xs font-medium rounded-md bg-white/10 text-white shadow-sm border border-white/10"
+                  id="btn-30d"
+                  class="filter-btn px-4 py-1.5 text-xs font-medium rounded-md bg-white/10 text-white shadow-sm border border-white/10 transition-colors"
                 >
                   30 Days
                 </button>
                 <button
-                  class="px-4 py-1.5 text-xs font-medium rounded-md text-gray-400 hover:text-white transition-colors"
+                  id="btn-7d"
+                  class="filter-btn px-4 py-1.5 text-xs font-medium rounded-md text-gray-400 hover:text-white transition-colors"
                 >
                   7 Days
                 </button>
                 <button
-                  class="px-4 py-1.5 text-xs font-medium rounded-md text-gray-400 hover:text-white transition-colors"
+                  id="btn-24h"
+                  class="filter-btn px-4 py-1.5 text-xs font-medium rounded-md text-gray-400 hover:text-white transition-colors"
                 >
                   24h
                 </button>
               </div>
             </div>
             <div class="relative h-48 md:h-64 w-full overflow-hidden">
-              <svg
-                class="drop-shadow-lg"
-                fill="none"
-                height="100%"
-                preserveAspectRatio="none"
-                viewBox="0 0 478 150"
-                width="100%"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <defs>
-                  <linearGradient
-                    gradientUnits="userSpaceOnUse"
-                    id="paint0_linear"
-                    x1="239"
-                    x2="239"
-                    y1="0"
-                    y2="150"
-                  >
-                    <stop stop-color="#3b82f6" stop-opacity="0.5"></stop>
-                    <stop
-                      offset="1"
-                      stop-color="#3b82f6"
-                      stop-opacity="0"
-                    ></stop>
-                  </linearGradient>
-                </defs>
-                <path
-                  class="opacity-30"
-                  d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z"
-                  fill="url(#paint0_linear)"
-                ></path>
-                <path
-                  d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25"
-                  filter="drop-shadow(0px 4px 6px rgba(59, 130, 246, 0.5))"
-                  stroke="#60a5fa"
-                  stroke-linecap="round"
-                  stroke-width="3"
-                ></path>
-              </svg>
+              <canvas id="revenueChart"></canvas>
             </div>
           </div>
           <div
@@ -519,6 +477,7 @@
         </div>
       </main>
     </div>
+
     <script>
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
@@ -553,7 +512,6 @@
         const user = JSON.parse(userStr);
         document.getElementById("user-name").textContent = user.name;
         document.getElementById("user-email").textContent = user.email;
-        // (Optional) Update name in sidebar if elements exist there, though mostly standardized.
 
         const balanceEl = document.getElementById("wallet-balance");
         const lifetimeEl = document.getElementById("wallet-lifetime");
@@ -564,22 +522,14 @@
           const res = await fetch(`/api/stats?userId=${user.id}`);
           const stats = await res.json();
 
-          // In a real app we'd have a separate 'balance' vs 'lifetime earnings'.
-          // For now, let's assume Balance = Lifetime Earnings (no withdrawals yet).
           balanceEl.textContent = stats.earnings;
           lifetimeEl.textContent = stats.earnings;
-
-          // Calculate pending from history? Or just 0 for now if API doesn't return it.
-          // If we had a list of 'pending' files with values, we could sum them.
-          // For now, set to $0.00 or some mock logic based on recent files.
           pendingEl.textContent = "$0.00";
 
           // Transactions
           txList.innerHTML = "";
           if (stats.history && stats.history.length > 0) {
             stats.history.forEach((item) => {
-              // Only show items with earnings? Or all?
-              // Let's show all as transactions.
               let icon = "description";
               let bgClass =
                 "bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
@@ -607,6 +557,135 @@
           } else {
             txList.innerHTML = `<div class="p-4 text-center text-gray-500">No transactions yet.</div>`;
           }
+
+          // --- Chart.js Logic ---
+          const ctx = document.getElementById("revenueChart").getContext("2d");
+          const revenueData = stats.revenue_analytics || [];
+
+          function getDataForDays(n) {
+            if (revenueData.length === 0)
+              return Array(n).fill({ date: "", amount: 0 });
+            // If fewer data points than n, return all. If n=1, take last.
+            if (n === 1) return revenueData.slice(-1);
+            return revenueData.slice(-n);
+          }
+
+          let chartInstance;
+
+          function renderChart(days) {
+            let dataSlice = getDataForDays(days);
+
+            // If data is empty (only 0s), create placeholders for visualization if needed,
+            // but here we just map what we have.
+
+            const labels = dataSlice.map((d) => (d ? d.date : ""));
+            const amounts = dataSlice.map((d) => (d ? d.amount : 0));
+
+            if (chartInstance) chartInstance.destroy();
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, "rgba(59, 130, 246, 0.5)");
+            gradient.addColorStop(1, "rgba(59, 130, 246, 0.0)");
+
+            chartInstance = new Chart(ctx, {
+              type: "line",
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    label: "Earnings",
+                    data: amounts,
+                    borderColor: "#3b82f6",
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    mode: "index",
+                    intersect: false,
+                    backgroundColor: "rgba(15, 23, 42, 0.9)",
+                    titleColor: "#e2e8f0",
+                    bodyColor: "#e2e8f0",
+                    borderColor: "rgba(255,255,255,0.1)",
+                    borderWidth: 1,
+                  },
+                },
+                scales: {
+                  x: {
+                    grid: { display: false, drawBorder: false },
+                    ticks: { color: "#94a3b8", maxTicksLimit: 7 },
+                  },
+                  y: {
+                    grid: {
+                      color: "rgba(255, 255, 255, 0.05)",
+                      drawBorder: false,
+                    },
+                    ticks: { color: "#94a3b8", callback: (val) => "$" + val },
+                  },
+                },
+                interaction: {
+                  intersect: false,
+                  mode: "nearest",
+                },
+              },
+            });
+          }
+
+          // Initial Render
+          renderChart(30);
+
+          // Button Logic
+          const btns = {
+            30: document.getElementById("btn-30d"),
+            7: document.getElementById("btn-7d"),
+            1: document.getElementById("btn-24h"),
+          };
+
+          // Set initial active state
+          if (btns[30]) {
+            btns[30].classList.remove("bg-white/10");
+            btns[30].classList.add("bg-white/20", "text-white");
+          }
+
+          function setActiveBtn(days) {
+            Object.values(btns).forEach((b) => {
+              if (!b) return;
+              b.classList.remove("bg-white/20", "text-white");
+              b.classList.add("text-gray-400");
+              // Re-add hover/base classes if needed, simpler to just toggle active ones
+            });
+            const active = btns[days];
+            if (active) {
+              active.classList.remove("text-gray-400");
+              active.classList.add("bg-white/20", "text-white");
+            }
+          }
+
+          if (btns[30])
+            btns[30].addEventListener("click", () => {
+              setActiveBtn(30);
+              renderChart(30);
+            });
+          if (btns[7])
+            btns[7].addEventListener("click", () => {
+              setActiveBtn(7);
+              renderChart(7);
+            });
+          if (btns[1])
+            btns[1].addEventListener("click", () => {
+              setActiveBtn(1);
+              renderChart(1);
+            });
         } catch (e) {
           console.error("Wallet error:", e);
         }
