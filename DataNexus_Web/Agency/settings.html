@@ -3,37 +3,109 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>AI Agency - Settings</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <title>MData - Settings</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
       rel="stylesheet"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
-      rel="stylesheet"
-    />
-    <script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
         theme: {
           extend: {
-            fontFamily: {
-              sans: ["Inter", "sans-serif"],
-            },
             colors: {
-              glass: "rgba(255, 255, 255, 0.05)",
-              glassBorder: "rgba(255, 255, 255, 0.1)",
-              primary: "#3b82f6", // Bright blue
-              secondary: "#64748b",
+              primary: "#3b82f6",
+              "primary-hover": "#2563eb",
+              "background-light": "#f0f4f8",
+              "background-dark": "#0f172a",
+              "surface-dark": "#1e293b",
+              "surface-light": "#ffffff",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-out",
+              "slide-up": "slideUp 0.5s ease-out",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0" },
+                "100%": { opacity: "1" },
+              },
+              slideUp: {
+                "0%": { transform: "translateY(20px)", opacity: "0" },
+                "100%": { transform: "translateY(0)", opacity: "1" },
+              },
             },
           },
         },
       };
     </script>
     <style>
+      .glass,
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      .dark .glass,
+      .dark .glass-panel {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      }
+      .dark .glass-card {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+          0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      }
+      .glass-input {
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      .dark .glass-input {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .hover-card-effect {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .hover-card-effect:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .dark .hover-card-effect:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+          0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        background: rgba(30, 41, 59, 0.6);
+        border-color: rgba(255, 255, 255, 0.15);
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
       body {
-        background: #0f172a;
         background-image: radial-gradient(
             at 0% 0%,
             rgba(59, 130, 246, 0.15) 0px,
@@ -46,54 +118,56 @@
           ),
           radial-gradient(
             at 100% 100%,
-            rgba(59, 130, 246, 0.15) 0px,
+            rgba(236, 72, 153, 0.15) 0px,
             transparent 50%
           ),
           radial-gradient(
             at 0% 100%,
-            rgba(139, 92, 246, 0.15) 0px,
+            rgba(34, 197, 94, 0.15) 0px,
             transparent 50%
           );
         background-attachment: fixed;
       }
-      .glass-panel {
-        background: rgba(17, 24, 39, 0.7);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-      .glass-card {
-        background: rgba(30, 41, 59, 0.4);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        transition: all 0.3s ease;
-      }
-      .glass-card:hover {
-        background: rgba(30, 41, 59, 0.6);
-        border-color: rgba(59, 130, 246, 0.3);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-      }
-      .glass-input {
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: white;
-      }
-      .glass-input:focus {
-        background: rgba(0, 0, 0, 0.3);
-        border-color: #3b82f6;
-        outline: none;
+      .dark body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(139, 92, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.1) 0px,
+            transparent 50%
+          );
       }
       ::-webkit-scrollbar {
-        width: 6px;
+        width: 5px;
+        height: 5px;
       }
       ::-webkit-scrollbar-track {
         background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 3px;
+        background: rgba(156, 163, 175, 0.2);
+        border-radius: 10px;
       }
       ::-webkit-scrollbar-thumb:hover {
+        background: rgba(156, 163, 175, 0.4);
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
         background: rgba(255, 255, 255, 0.2);
       }
     </style>
@@ -104,7 +178,7 @@
     </style>
   </head>
   <body
-    class="text-white h-screen flex overflow-hidden selection:bg-primary/30 antialiased font-sans"
+    class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary"
   >
     <aside
       class="hidden lg:flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-all duration-300 z-50 pt-0"
@@ -127,7 +201,7 @@
           </div>
         </div>
       </div>
-      <nav class="flex-1 px-4 sidebar-scroll overflow-y-auto space-y-1.5">
+      <nav class="flex-1 px-4 sidebar-scroll overflow-y-auto space-y-1.5 py-2">
         <a
           class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
           href="dashboard.html"
@@ -214,56 +288,55 @@
         </a>
       </div>
     </aside>
-    <main class="flex-1 flex flex-col relative overflow-hidden">
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
       <header
-        class="h-24 flex-shrink-0 flex items-center justify-between px-10 z-10 glass-panel border-b border-white/5"
+        class="h-16 glass border-b border-white/5 flex items-center justify-between px-6 sticky top-0 z-40"
       >
-        <button
-          class="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white mr-4 p-2"
-        >
-          <span class="material-symbols-outlined">menu</span>
-        </button>
-        <div class="relative w-96 group">
-          <div
-            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-          >
-            <span
-              class="material-symbols-outlined text-slate-400 group-focus-within:text-blue-400 transition-colors"
-              >search</span
-            >
-          </div>
-          <input
-            class="block w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm placeholder-slate-500 transition-all focus:ring-2 focus:ring-blue-500/20"
-            placeholder="Search settings, keys, or docs..."
-            type="text"
-          />
-        </div>
-        <div class="flex items-center gap-6">
+        <div class="flex items-center gap-4">
           <button
-            class="relative p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all hover:scale-105"
+            class="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white p-2 -ml-2 transition-colors"
           >
-            <span class="material-symbols-outlined">notifications</span>
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <div class="hidden sm:flex flex-col text-left">
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider"
+              >Agency</span
+            >
+            <h1 class="text-sm font-bold text-white uppercase tracking-tight">
+              Settings
+            </h1>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 ml-auto">
+          <button
+            class="relative rounded-full p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+          >
+            <span class="material-symbols-outlined text-[22px]"
+              >notifications</span
+            >
             <span
-              class="absolute top-2 right-2.5 h-2 w-2 bg-red-500 rounded-full border border-slate-900 animate-pulse"
+              class="absolute top-2 right-2.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-slate-900 animate-pulse"
             ></span>
           </button>
-          <div class="h-8 w-px bg-white/10"></div>
-          <div class="flex items-center gap-4 pl-2 cursor-pointer group">
+          <div class="h-6 w-px bg-white/10 mx-1"></div>
+          <div class="flex items-center gap-3 pl-1 cursor-pointer group">
             <div class="text-right hidden sm:block">
-              <div
-                class="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors"
+              <p
+                class="text-sm font-semibold text-white group-hover:text-primary transition-colors leading-none"
               >
                 Alex Morgan
-              </div>
-              <div class="text-xs text-slate-400">Admin Workspace</div>
+              </p>
+              <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">
+                Pro Member
+              </p>
             </div>
             <div
-              class="h-11 w-11 rounded-full p-0.5 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 transition-transform group-hover:scale-105"
+              class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all"
             >
               <img
                 alt="Profile"
-                class="h-full w-full rounded-full object-cover border-2 border-slate-900"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiHX7wdlU6jYzIkOoIzgyH40jlYR3DTReNKMjOkbx_2zhiUGAaXn2eKy6V125MN3J6h5RmHatWPEj7znK0gWHExzQbyCVjvULuHd7FNa1X55yRzM9WgFybczrgCLtww-QFE28MXw8nx6YasxJ5R01k2fb9gS7xPNj8T2ywWUJn48zANiHkKGqSHQ-UPXTl_gXQUHpFojO051VlfieSvAElC3whmEgQEGhpMDEPgJ0MH8muHyS77HqhmKqCo2KQb42Yg4p6H25jqwP4"
+                class="h-full w-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-gTsjan42l3my7G3dN86d6rfU-c2kW9NidATzboZP24DaFfSsYEoIFcJ9v_Aejq2Npoko6m7HnJykFSmYTI_l9G4BemCu7LGYg7YfExBXzLaQ1hc003wqFbgXPSXwfMNwyQP5vvTOW-orELpucmuWY3U5RcCkVseo_XEVX59Bjngi1LM_Ya96hg0dI9bd2W7z3PzqO3hksCI2F0BMnlaKchEP6xs5pe17FYaUI6qPvNXKfWHbxJePOQZFgPuGqoOuYOxLeVPwxMzw"
               />
             </div>
           </div>

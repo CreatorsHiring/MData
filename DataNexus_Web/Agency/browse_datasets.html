@@ -3,9 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>AI Agency - Browse Datasets</title>
+    <title>MData - Browse Datasets</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
       rel="stylesheet"
     />
     <link
@@ -13,95 +15,138 @@
       rel="stylesheet"
     />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
+    <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
         theme: {
           extend: {
             colors: {
-              "glass-border": "rgba(255, 255, 255, 0.08)",
-              "glass-surface": "rgba(30, 41, 59, 0.4)",
-              "glass-highlight": "rgba(255, 255, 255, 0.05)",
               primary: "#3b82f6",
-              "primary-glow": "#60a5fa",
-              accent: "#8b5cf6",
+              "primary-hover": "#2563eb",
+              "background-light": "#f0f4f8",
+              "background-dark": "#0f172a",
+              "surface-dark": "#1e293b",
+              "surface-light": "#ffffff",
             },
             fontFamily: {
-              sans: ["Inter", "sans-serif"],
+              display: ["Inter", "sans-serif"],
             },
-            backgroundImage: {
-              "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-              "hero-glow":
-                "conic-gradient(from 180deg at 50% 50%, #1e293b 0deg, #0f172a 180deg, #1e293b 360deg)",
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-out",
+              "slide-up": "slideUp 0.5s ease-out",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0" },
+                "100%": { opacity: "1" },
+              },
+              slideUp: {
+                "0%": { transform: "translateY(20px)", opacity: "0" },
+                "100%": { transform: "translateY(0)", opacity: "1" },
+              },
             },
           },
         },
       };
     </script>
     <style>
+      .glass,
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      .dark .glass,
+      .dark .glass-panel {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      }
+      .dark .glass-card {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+          0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
       body {
-        background-color: #0f172a;
         background-image: radial-gradient(
-            circle at 15% 50%,
-            rgba(59, 130, 246, 0.08),
-            transparent 25%
+            at 0% 0%,
+            rgba(59, 130, 246, 0.15) 0px,
+            transparent 50%
           ),
           radial-gradient(
-            circle at 85% 30%,
-            rgba(139, 92, 246, 0.08),
-            transparent 25%
+            at 100% 0%,
+            rgba(139, 92, 246, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.15) 0px,
+            transparent 50%
+          );
+        background-attachment: fixed;
+      }
+      .dark body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(139, 92, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.1) 0px,
+            transparent 50%
           );
       }
       ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+        width: 5px;
+        height: 5px;
       }
       ::-webkit-scrollbar-track {
         background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(156, 163, 175, 0.2);
         border-radius: 10px;
       }
       ::-webkit-scrollbar-thumb:hover {
+        background: rgba(156, 163, 175, 0.4);
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
         background: rgba(255, 255, 255, 0.2);
-      }
-      .glass-panel {
-        background: rgba(17, 24, 39, 0.6);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-      }
-      .glass-card {
-        background: rgba(30, 41, 59, 0.3);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      .glass-card:hover {
-        background: rgba(30, 41, 59, 0.5);
-        border-color: rgba(59, 130, 246, 0.3);
-        transform: translateY(-4px);
-        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-      }
-      .sidebar-item-active {
-        background: linear-gradient(
-          90deg,
-          rgba(59, 130, 246, 0.15) 0%,
-          rgba(59, 130, 246, 0.05) 100%
-        );
-        border-left: 3px solid #3b82f6;
-        color: #ffffff;
-      }
-      .sidebar-item-inactive {
-        color: #94a3b8;
-        border-left: 3px solid transparent;
-      }
-      .sidebar-item-inactive:hover {
-        color: #f8fafc;
-        background: rgba(255, 255, 255, 0.03);
       }
     </style>
     <style>
@@ -111,7 +156,7 @@
     </style>
   </head>
   <body
-    class="text-slate-200 font-sans h-screen flex overflow-hidden selection:bg-primary/30 selection:text-white"
+    class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary"
   >
     <aside
       class="hidden lg:flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-all duration-300 z-50 pt-0"
@@ -134,7 +179,7 @@
           </div>
         </div>
       </div>
-      <nav class="flex-1 px-4 sidebar-scroll overflow-y-auto space-y-1.5">
+      <nav class="flex-1 px-4 sidebar-scroll overflow-y-auto space-y-1.5 py-2">
         <a
           class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
           href="dashboard.html"
@@ -221,70 +266,58 @@
         </a>
       </div>
     </aside>
-    <div class="flex-1 flex flex-col min-w-0 relative h-full">
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
       <header
-        class="h-20 shrink-0 glass-panel border-b-0 border-l border-white/5 flex items-center justify-between px-8 z-20 sticky top-0"
+        class="h-16 glass border-b border-white/5 flex items-center justify-between px-6 sticky top-0 z-40"
       >
-        <button class="md:hidden text-slate-400 hover:text-white mr-4 p-2">
-          <span class="material-symbols-outlined">menu</span>
-        </button>
-        <div class="hidden md:block flex-1 max-w-lg">
-          <div class="relative group">
-            <div
-              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+        <div class="flex items-center gap-4">
+          <button class="md:hidden text-slate-400 hover:text-white mr-4 p-2">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <div class="hidden sm:flex flex-col text-left">
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider"
+              >Marketplace</span
             >
-              <span
-                class="material-symbols-outlined text-slate-500 group-focus-within:text-primary transition-colors"
-                >search</span
-              >
-            </div>
-            <input
-              class="block w-full pl-10 pr-4 py-2.5 bg-slate-900/50 border border-white/10 rounded-full text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent focus:bg-slate-900/80 transition-all shadow-inner"
-              placeholder="Search datasets, users, or tags..."
-              type="text"
-            />
-            <div
-              class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-            >
-              <kbd
-                class="hidden lg:inline-flex items-center rounded border border-white/10 px-1.5 py-0.5 font-sans text-xs text-slate-500"
-                >⌘K</kbd
-              >
-            </div>
+            <h1 class="text-sm font-bold text-white uppercase tracking-tight">
+              Browse Datasets
+            </h1>
           </div>
         </div>
-        <div class="flex items-center gap-6 ml-auto">
+        <div class="flex items-center gap-4 ml-auto">
           <button
             class="relative p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-colors"
           >
-            <span class="material-symbols-outlined">notifications</span>
+            <span class="material-symbols-outlined text-[22px]"
+              >notifications</span
+            >
             <span
-              class="absolute top-2 right-2 size-2.5 bg-red-500 rounded-full border-2 border-[#151b28]"
+              class="absolute top-2 right-2.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-slate-900 animate-pulse"
             ></span>
           </button>
-          <div class="h-8 w-px bg-white/10"></div>
-          <button
-            class="flex items-center gap-3 pl-1 pr-2 py-1 rounded-full hover:bg-white/5 border border-transparent hover:border-white/5 transition-all"
-          >
-            <img
-              class="size-9 rounded-full object-cover ring-2 ring-white/10"
-              data-alt="User profile picture"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2_WDC6OIXh6oKzz-CZaF28NUal3-bDQPAbErPnS4DArzH5gSIGMLeIfGYxwtgFM1gOpxvHTTmA-KzjKJxcsPP_YWI_NmVzxwHjj_QY8JLnJB5u6-86dy1ZH-BttL5bSZTeMHdql2HyyzL_bH8fLYb4NpHNGbwEzVKK13R_pPrz2erVW1WbQ8kxMXl-NpJum4xFp3IwnqJ8OkJHkXq_soqrAlpk0rlb6peI2uhTWPP58L5u2awcksaAWogh0eQTRNM-QneTFNUfI3-"
-            />
-            <div class="text-left hidden sm:block">
-              <p class="text-sm font-semibold text-white leading-none">
+          <div class="h-6 w-px bg-white/10 mx-1"></div>
+          <div class="flex items-center gap-3 pl-1 cursor-pointer group">
+            <div class="text-right hidden sm:block">
+              <p
+                class="text-sm font-semibold text-white group-hover:text-primary transition-colors leading-none"
+              >
                 Alex Morgan
               </p>
               <p
-                class="text-[10px] text-slate-400 mt-1 uppercase tracking-wide font-medium"
+                class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider"
               >
                 Pro Member
               </p>
             </div>
-            <span class="material-symbols-outlined text-slate-400 text-sm ml-1"
-              >expand_more</span
+            <div
+              class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all"
             >
-          </button>
+              <img
+                alt="Profile"
+                class="h-full w-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-gTsjan42l3my7G3dN86d6rfU-c2kW9NidATzboZP24DaFfSsYEoIFcJ9v_Aejq2Npoko6m7HnJykFSmYTI_l9G4BemCu7LGYg7YfExBXzLaQ1hc003wqFbgXPSXwfMNwyQP5vvTOW-orELpucmuWY3U5RcCkVseo_XEVX59Bjngi1LM_Ya96hg0dI9bd2W7z3PzqO3hksCI2F0BMnlaKchEP6xs5pe17FYaUI6qPvNXKfWHbxJePOQZFgPuGqoOuYOxLeVPwxMzw"
+              />
+            </div>
+          </div>
         </div>
       </header>
       <main class="flex-1 overflow-y-auto scroll-smooth">

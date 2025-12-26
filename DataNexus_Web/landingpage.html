@@ -134,42 +134,46 @@
             >
           </div>
           <div class="hidden md:flex items-center space-x-10">
-            <a
+            <button
+              id="nav-uploader-link"
               class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group py-2"
-              href="#"
             >
               For Uploaders
               <span
                 class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"
               ></span>
-            </a>
-            <a
+            </button>
+            <button
+              id="nav-agency-link"
               class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group py-2"
-              href="#"
             >
               For Agencies
               <span
                 class="absolute bottom-0 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover:w-full"
               ></span>
-            </a>
-            <a
+            </button>
+            <button
+              id="nav-marketplace-link"
               class="text-sm font-medium text-gray-300 hover:text-white transition-colors"
-              href="#"
-              >Marketplace</a
             >
-            <a
+              Marketplace
+            </button>
+            <button
+              id="nav-safety-link"
               class="text-sm font-medium text-gray-300 hover:text-white transition-colors"
-              href="#"
-              >Safety</a
             >
+              Safety
+            </button>
           </div>
           <div class="flex items-center gap-6">
-            <a
-              class="text-sm font-semibold text-gray-300 hover:text-white hidden sm:block transition-colors"
-              href="#"
-              >Login</a
-            >
             <button
+              id="nav-login-btn"
+              class="text-sm font-semibold text-gray-300 hover:text-white hidden sm:block transition-colors"
+            >
+              Login
+            </button>
+            <button
+              id="nav-get-started-btn"
               class="bg-white text-black hover:bg-gray-100 text-sm font-bold py-2.5 px-6 rounded-lg transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] hover:-translate-y-0.5"
             >
               Get Started
@@ -218,6 +222,7 @@
               class="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start mt-2"
             >
               <button
+                id="hero-upload-btn"
                 class="h-14 px-8 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:to-blue-500 text-white text-base font-bold flex items-center justify-center gap-3 transition-all hover:scale-[1.02] shadow-lg shadow-blue-500/25 group"
               >
                 <span
@@ -227,6 +232,7 @@
                 Start Uploading
               </button>
               <button
+                id="hero-browse-btn"
                 class="h-14 px-8 rounded-xl glass-button text-white text-base font-bold flex items-center justify-center gap-3 group hover:bg-white/10"
               >
                 <span
@@ -509,6 +515,7 @@
             </div>
             <div class="mt-12">
               <button
+                id="uploader-card-btn"
                 class="w-full py-4 rounded-xl border border-primary/30 text-primary font-bold hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
               >
                 Start Earning
@@ -577,6 +584,7 @@
             </div>
             <div class="mt-12">
               <button
+                id="agency-card-btn"
                 class="w-full py-4 rounded-xl border border-accent/30 text-accent font-bold hover:bg-accent hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
               >
                 Explore Catalog
@@ -701,9 +709,10 @@
           </p>
           <div class="flex flex-col sm:flex-row justify-center gap-6">
             <button
+              id="cta-upload-btn"
               class="h-16 px-10 rounded-xl bg-white text-black text-lg font-bold hover:bg-gray-100 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:-translate-y-1"
             >
-              Start Uploading Now
+              Start Upload Now
             </button>
             <button
               class="h-16 px-10 rounded-xl bg-black/40 text-white border border-white/20 text-lg font-bold hover:bg-black/60 transition-all backdrop-blur-md"
@@ -863,5 +872,260 @@
         </div>
       </div>
     </footer>
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 z-[100] hidden">
+      <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        id="modal-overlay"
+      ></div>
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div
+          class="relative w-full max-w-md glass-card rounded-[2rem] p-8 lg:p-10 animate-fade-in overflow-hidden"
+        >
+          <!-- Background Blobs inside Modal -->
+          <div
+            class="absolute -top-24 -right-24 w-48 h-48 bg-primary/20 rounded-full blur-3xl pointer-events-none"
+          ></div>
+          <div
+            class="absolute -bottom-24 -left-24 w-48 h-48 bg-accent/20 rounded-full blur-3xl pointer-events-none"
+          ></div>
+
+          <button
+            id="close-modal"
+            class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
+          >
+            <span class="material-symbols-outlined">close</span>
+          </button>
+
+          <div class="relative z-10 text-center mb-8">
+            <h3
+              id="modal-title"
+              class="text-3xl font-heading font-bold text-white mb-2"
+            >
+              Welcome Back
+            </h3>
+            <p id="modal-subtitle" class="text-gray-400">
+              Sign in to your account to continue
+            </p>
+          </div>
+
+          <!-- Role Switcher -->
+          <div
+            class="flex p-1 bg-white/5 rounded-xl border border-white/10 mb-8 relative z-10"
+          >
+            <button
+              id="role-user"
+              class="flex-1 py-2.5 text-sm font-bold rounded-lg transition-all bg-primary text-white"
+            >
+              User Portal
+            </button>
+            <button
+              id="role-agency"
+              class="flex-1 py-2.5 text-sm font-bold rounded-lg transition-all text-gray-400 hover:text-white"
+            >
+              Agency Portal
+            </button>
+          </div>
+
+          <form id="auth-form" class="space-y-5 relative z-10">
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1"
+                >Email Address</label
+              >
+              <input
+                type="email"
+                required
+                placeholder="name@company.com"
+                class="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1"
+                >Password</label
+              >
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                class="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="w-full h-14 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:to-blue-500 text-white font-bold text-lg shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] mt-4"
+            >
+              Sign In
+            </button>
+          </form>
+
+          <div class="mt-8 text-center relative z-10">
+            <p class="text-sm text-gray-500">
+              <span id="switch-text">Don't have an account?</span>
+              <button
+                id="switch-auth"
+                class="text-primary font-bold hover:underline ml-1"
+              >
+                Create account
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const modal = document.getElementById("auth-modal");
+      const modalOverlay = document.getElementById("modal-overlay");
+      const closeModal = document.getElementById("close-modal");
+      const authForm = document.getElementById("auth-form");
+      const modalTitle = document.getElementById("modal-title");
+      const modalSubtitle = document.getElementById("modal-subtitle");
+      const roleUser = document.getElementById("role-user");
+      const roleAgency = document.getElementById("role-agency");
+      const switchAuth = document.getElementById("switch-auth");
+      const switchText = document.getElementById("switch-text");
+      const submitBtn = authForm.querySelector('button[type="submit"]');
+
+      let currentRole = "user";
+      let currentMode = "login"; // login or signup
+
+      function toggleModal(show, mode = "login", role = "user") {
+        if (show) {
+          currentMode = mode;
+          currentRole = role;
+          updateUI();
+          modal.classList.remove("hidden");
+          document.body.style.overflow = "hidden";
+        } else {
+          modal.classList.add("hidden");
+          document.body.style.overflow = "";
+        }
+      }
+
+      function updateUI() {
+        // Update Role Buttons
+        if (currentRole === "user") {
+          roleUser.classList.add("bg-primary", "text-white");
+          roleUser.classList.remove("text-gray-400");
+          roleAgency.classList.remove("bg-primary", "text-white", "bg-accent");
+          roleAgency.classList.add("text-gray-400");
+          submitBtn.classList.remove(
+            "from-purple-600",
+            "to-indigo-600",
+            "shadow-purple-500/25"
+          );
+          submitBtn.classList.add(
+            "from-primary",
+            "to-blue-600",
+            "shadow-blue-500/25"
+          );
+        } else {
+          roleAgency.classList.add("bg-accent", "text-white");
+          roleAgency.classList.remove("text-gray-400");
+          roleUser.classList.remove("bg-primary", "text-white");
+          roleUser.classList.add("text-gray-400");
+          submitBtn.classList.add(
+            "from-purple-600",
+            "to-indigo-600",
+            "shadow-purple-500/25"
+          );
+          submitBtn.classList.remove(
+            "from-primary",
+            "to-blue-600",
+            "shadow-blue-500/25"
+          );
+        }
+
+        // Update Text for Mode
+        if (currentMode === "login") {
+          modalTitle.textContent = "Welcome Back";
+          modalSubtitle.textContent = "Sign in to your account to continue";
+          submitBtn.textContent = "Sign In";
+          switchText.textContent = "Don't have an account?";
+          switchAuth.textContent = "Create account";
+        } else {
+          modalTitle.textContent = "Join MData";
+          modalSubtitle.textContent = "Start your journey with ethical data";
+          submitBtn.textContent = "Get Started";
+          switchText.textContent = "Already have an account?";
+          switchAuth.textContent = "Sign In";
+        }
+      }
+
+      // Event Listeners for Opening Modal
+      document.getElementById("nav-login-btn").onclick = () =>
+        toggleModal(true, "login");
+      document.getElementById("nav-get-started-btn").onclick = () =>
+        toggleModal(true, "signup");
+      document.getElementById("nav-uploader-link").onclick = () =>
+        toggleModal(true, "signup", "user");
+      document.getElementById("nav-agency-link").onclick = () =>
+        toggleModal(true, "signup", "agency");
+      document.getElementById("nav-marketplace-link").onclick = () =>
+        toggleModal(true, "login", "agency");
+      document.getElementById("nav-safety-link").onclick = () =>
+        toggleModal(true, "login");
+      document.getElementById("hero-upload-btn").onclick = () =>
+        toggleModal(true, "signup", "user");
+      document.getElementById("hero-browse-btn").onclick = () =>
+        toggleModal(true, "signup", "agency");
+      document.getElementById("uploader-card-btn").onclick = () =>
+        toggleModal(true, "signup", "user");
+      document.getElementById("agency-card-btn").onclick = () =>
+        toggleModal(true, "signup", "agency");
+      document.getElementById("cta-upload-btn").onclick = () =>
+        toggleModal(true, "signup", "user");
+
+      closeModal.onclick = () => toggleModal(false);
+      modalOverlay.onclick = () => toggleModal(false);
+
+      roleUser.onclick = () => {
+        currentRole = "user";
+        updateUI();
+      };
+      roleAgency.onclick = () => {
+        currentRole = "agency";
+        updateUI();
+      };
+      switchAuth.onclick = () => {
+        currentMode = currentMode === "login" ? "signup" : "login";
+        updateUI();
+      };
+
+      authForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const email = authForm.querySelector('input[type="email"]').value;
+        const password = authForm.querySelector('input[type="password"]').value;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML =
+          '<span class="material-symbols-outlined animate-spin">sync</span> Processing...';
+
+        try {
+          const response = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              password,
+              role: currentRole,
+              mode: currentMode,
+            }),
+          });
+          const data = await response.json();
+          if (data.success) {
+            window.location.href = data.redirect;
+          }
+        } catch (err) {
+          console.error("Login failed:", err);
+          submitBtn.disabled = false;
+          submitBtn.textContent =
+            currentMode === "login" ? "Sign In" : "Get Started";
+        }
+      };
+    </script>
   </body>
 </html>
