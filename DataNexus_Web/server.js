@@ -19,17 +19,37 @@ app.use(express.static(__dirname));
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
 const databaseId = "mdatadb";
-const containerId = "Users";
 
-let container;
 let database;
+let usersContainer; // For contributor accounts
+let agenciesContainer; // For agency/buyer accounts
 
 async function initCosmos() {
   try {
     const client = new CosmosClient({ endpoint, key });
-    database = client.database(databaseId); // Global assignment
-    container = database.container(containerId);
-    console.log(`Connected to Azure Cosmos DB: ${databaseId} > ${containerId}`);
+
+    // Get or create database
+    const { database: db } = await client.databases.createIfNotExists({
+      id: databaseId,
+    });
+    database = db;
+
+    // Get or create Users container (for contributors)
+    const { container: usersC } = await database.containers.createIfNotExists({
+      id: "Users",
+      partitionKey: { paths: ["/id"] },
+    });
+    usersContainer = usersC;
+    console.log(`Connected to Azure Cosmos DB: ${databaseId} > Users`);
+
+    // Get or create Agencies container (for buyers)
+    const { container: agenciesC } =
+      await database.containers.createIfNotExists({
+        id: "Agencies",
+        partitionKey: { paths: ["/id"] },
+      });
+    agenciesContainer = agenciesC;
+    console.log(`Connected to Azure Cosmos DB: ${databaseId} > Agencies`);
   } catch (err) {
     console.error("Failed to connect to Cosmos DB:", err.message);
   }
@@ -117,7 +137,7 @@ app.get("/api/stats", async (req, res) => {
   }
 
   try {
-    const submissionsContainer = container.database.container("Submissions");
+    const submissionsContainer = database.container("Submissions");
     // Ensure container exists logic is handled in Function App usually, but for reading we assume it exists or fail gracefully
 
     const querySpec = {
@@ -220,7 +240,7 @@ app.get("/api/files", async (req, res) => {
   // Actually, the Stats API returns history, so we can probably reuse that or just specific query.
   // Let's implement a specific one for the history page to potentially support pagination later.
   try {
-    const submissionsContainer = container.database.container("Submissions");
+    const submissionsContainer = database.container("Submissions");
     const querySpec = {
       query:
         "SELECT * FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
@@ -519,27 +539,41 @@ app.post("/api/market/checkout", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const { email, password, role } = req.body;
 
-  if (!container) {
+  // Determine which container to use based on role
+  const targetContainer =
+    role === "agency" ? agenciesContainer : usersContainer;
+  const accountType = role === "agency" ? "agency" : "user";
+
+  if (!targetContainer) {
     return res
       .status(500)
       .json({ success: false, error: "Database not connected" });
   }
 
   try {
-    // Query user by email
+    // Query account by email in the appropriate container
     const querySpec = {
       query: "SELECT * FROM c WHERE c.email = @email",
       parameters: [{ name: "@email", value: email }],
     };
 
-    const { resources: items } = await container.items
+    const { resources: items } = await targetContainer.items
       .query(querySpec)
       .fetchAll();
 
     if (items.length === 0) {
-      return res
-        .status(401)
-        .json({ success: false, error: "Invalid credentials" });
+      // Account not found in the target container
+      const errorMessage =
+        role === "agency"
+          ? "No agency account found with this email. Please create an agency account to access the marketplace."
+          : "No user account found with this email. Please create an account to start earning from your data.";
+
+      return res.status(404).json({
+        success: false,
+        error: errorMessage,
+        errorType: "ACCOUNT_NOT_FOUND",
+        accountType: accountType,
+      });
     }
 
     const user = items[0];
@@ -549,19 +583,17 @@ app.post("/api/login", async (req, res) => {
     if (inputHash !== user.password_hash) {
       return res
         .status(401)
-        .json({ success: false, error: "Invalid credentials" });
+        .json({ success: false, error: "Invalid password. Please try again." });
     }
 
-    // Verify Role (Optional: strict check or just guidance)
-    // Note: The Python backend sets a default 'contributor' role.
-    // We can allow users to login to either portal but redirect based on their stored role preference or requested role.
+    console.log(
+      `${accountType.charAt(0).toUpperCase() + accountType.slice(1)} ${
+        user.name
+      } logged in successfully.`
+    );
 
-    console.log(`User ${user.name} logged in successfully.`);
-
-    let redirectUrl = "/User/dashboard.html";
-    if (role === "agency" || user.role === "agency") {
-      redirectUrl = "/Agency/dashboard.html";
-    }
+    const redirectUrl =
+      role === "agency" ? "/Agency/dashboard.html" : "/User/dashboard.html";
 
     res.json({
       success: true,
@@ -570,7 +602,7 @@ app.post("/api/login", async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: role || user.role,
         balance: user.balance || 0,
       },
     });
@@ -584,44 +616,59 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/signup", async (req, res) => {
   const { email, password, name, role } = req.body;
 
-  if (!container) {
+  // Determine which container to use based on role
+  const targetContainer =
+    role === "agency" ? agenciesContainer : usersContainer;
+  const accountType = role === "agency" ? "agency" : "contributor";
+
+  if (!targetContainer) {
     return res
       .status(500)
       .json({ success: false, error: "Database not connected" });
   }
 
   try {
-    // Check availability
+    // Check if email already exists in target container
     const querySpec = {
       query: "SELECT * FROM c WHERE c.email = @email",
       parameters: [{ name: "@email", value: email }],
     };
-    const { resources: existing } = await container.items
+    const { resources: existing } = await targetContainer.items
       .query(querySpec)
       .fetchAll();
 
     if (existing.length > 0) {
-      return res
-        .status(409)
-        .json({ success: false, error: "Email already exists" });
+      const errorMessage =
+        role === "agency"
+          ? "An agency account already exists with this email. Please sign in instead."
+          : "A user account already exists with this email. Please sign in instead.";
+      return res.status(409).json({
+        success: false,
+        error: errorMessage,
+        errorType: "EMAIL_EXISTS",
+      });
     }
 
-    // Create User
+    // Create Account
     const salt = crypto.randomBytes(16).toString("hex");
     const password_hash = hashPassword(password, salt);
-    const newUser = {
+    const newAccount = {
       id: crypto.randomUUID(),
-      name: name || "New User",
+      name: name || (role === "agency" ? "New Agency" : "New User"),
       email: email,
       password_hash: password_hash,
       salt: salt,
-      role: role || "contributor",
+      role: accountType,
       balance: 0.0,
       joined_date: new Date().toISOString(),
     };
 
-    await container.items.create(newUser);
-    console.log(`User ${newUser.name} created.`);
+    await targetContainer.items.create(newAccount);
+    console.log(
+      `${accountType.charAt(0).toUpperCase() + accountType.slice(1)} ${
+        newAccount.name
+      } created in ${role === "agency" ? "Agencies" : "Users"} container.`
+    );
 
     const redirectUrl =
       role === "agency" ? "/Agency/dashboard.html" : "/User/dashboard.html";
@@ -630,10 +677,10 @@ app.post("/api/signup", async (req, res) => {
       success: true,
       redirect: redirectUrl,
       user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
+        id: newAccount.id,
+        name: newAccount.name,
+        email: newAccount.email,
+        role: newAccount.role,
       },
     });
   } catch (err) {

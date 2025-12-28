@@ -959,6 +959,34 @@
             </button>
           </form>
 
+          <!-- Error Message Area -->
+          <div
+            id="auth-error"
+            class="hidden mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 relative z-10"
+          >
+            <div class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-red-400">error</span>
+              <div class="flex-1">
+                <p
+                  id="auth-error-text"
+                  class="text-red-300 text-sm font-medium"
+                ></p>
+                <button
+                  id="auth-error-action"
+                  class="hidden mt-2 text-primary hover:underline text-sm font-bold"
+                >
+                  Create Account Instead
+                </button>
+              </div>
+              <button
+                onclick="hideError()"
+                class="text-gray-500 hover:text-white transition-colors"
+              >
+                <span class="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
+          </div>
+
           <div class="mt-8 text-center relative z-10">
             <p class="text-sm text-gray-500">
               <span id="switch-text">Don't have an account?</span>
@@ -973,6 +1001,12 @@
         </div>
       </div>
     </div>
+
+    <!-- Toast Notification Container -->
+    <div
+      id="toast-container"
+      class="fixed top-6 right-6 z-[100] space-y-3"
+    ></div>
 
     <script>
       const modal = document.getElementById("auth-modal");
@@ -1095,6 +1129,8 @@
 
       authForm.onsubmit = async (e) => {
         e.preventDefault();
+        hideError(); // Clear any previous errors
+
         const email = authForm.querySelector('input[type="email"]').value;
         const password = authForm.querySelector('input[type="password"]').value;
 
@@ -1103,28 +1139,112 @@
           '<span class="material-symbols-outlined animate-spin">sync</span> Processing...';
 
         try {
-          const response = await fetch("/api/login", {
+          // Call correct API based on mode
+          const apiEndpoint =
+            currentMode === "login" ? "/api/login" : "/api/signup";
+
+          const response = await fetch(apiEndpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               email,
               password,
               role: currentRole,
-              mode: currentMode,
+              name: email.split("@")[0], // Use email prefix as name for signup
             }),
           });
+
           const data = await response.json();
+
           if (data.success) {
             localStorage.setItem("user", JSON.stringify(data.user));
-            window.location.href = data.redirect;
+            showToast("Success! Redirecting...", "success");
+            setTimeout(() => {
+              window.location.href = data.redirect;
+            }, 500);
+          } else {
+            // Handle specific error types
+            showError(data.error, data.errorType);
           }
         } catch (err) {
-          console.error("Login failed:", err);
+          console.error("Auth error:", err);
+          showError("Network error. Please try again.", "NETWORK_ERROR");
+        } finally {
           submitBtn.disabled = false;
           submitBtn.textContent =
             currentMode === "login" ? "Sign In" : "Get Started";
         }
       };
+
+      // Error handling functions
+      function showError(message, errorType) {
+        const errorContainer = document.getElementById("auth-error");
+        const errorText = document.getElementById("auth-error-text");
+        const errorAction = document.getElementById("auth-error-action");
+
+        errorText.textContent = message;
+        errorContainer.classList.remove("hidden");
+
+        // Show action button for specific error types
+        if (errorType === "ACCOUNT_NOT_FOUND") {
+          errorAction.textContent = "Create Account Instead";
+          errorAction.classList.remove("hidden");
+          errorAction.onclick = () => {
+            currentMode = "signup";
+            updateUI();
+            hideError();
+          };
+        } else if (errorType === "EMAIL_EXISTS") {
+          errorAction.textContent = "Sign In Instead";
+          errorAction.classList.remove("hidden");
+          errorAction.onclick = () => {
+            currentMode = "login";
+            updateUI();
+            hideError();
+          };
+        } else {
+          errorAction.classList.add("hidden");
+        }
+      }
+
+      function hideError() {
+        const errorContainer = document.getElementById("auth-error");
+        errorContainer.classList.add("hidden");
+      }
+
+      function showToast(message, type = "info") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+
+        const bgColor =
+          type === "success"
+            ? "bg-emerald-500/90"
+            : type === "error"
+            ? "bg-red-500/90"
+            : "bg-blue-500/90";
+        const icon =
+          type === "success"
+            ? "check_circle"
+            : type === "error"
+            ? "error"
+            : "info";
+
+        toast.className = `${bgColor} backdrop-blur-lg text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-slide-up min-w-[280px]`;
+        toast.innerHTML = `
+          <span class="material-symbols-outlined">${icon}</span>
+          <span class="font-medium">${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateX(100px)";
+          toast.style.transition = "all 0.3s ease";
+          setTimeout(() => toast.remove(), 300);
+        }, 4000);
+      }
     </script>
   </body>
 </html>

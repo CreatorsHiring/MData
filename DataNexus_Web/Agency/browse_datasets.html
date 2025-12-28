@@ -316,13 +316,11 @@
               </p>
             </div>
             <div
-              class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all"
+              class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center"
             >
-              <img
-                alt="Profile"
-                class="h-full w-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-gTsjan42l3my7G3dN86d6rfU-c2kW9NidATzboZP24DaFfSsYEoIFcJ9v_Aejq2Npoko6m7HnJykFSmYTI_l9G4BemCu7LGYg7YfExBXzLaQ1hc003wqFbgXPSXwfMNwyQP5vvTOW-orELpucmuWY3U5RcCkVseo_XEVX59Bjngi1LM_Ya96hg0dI9bd2W7z3PzqO3hksCI2F0BMnlaKchEP6xs5pe17FYaUI6qPvNXKfWHbxJePOQZFgPuGqoOuYOxLeVPwxMzw"
-              />
+              <span class="material-symbols-outlined text-white text-[18px]"
+                >person</span
+              >
             </div>
           </div>
         </div>
@@ -629,6 +627,78 @@
         </div>
       </main>
     </div>
+
+    <!-- Toast Container -->
+    <div
+      id="toast-container"
+      class="fixed top-6 right-6 z-[100] space-y-3"
+    ></div>
+
+    <script>
+      // Toast Notification Function
+      function showToast(message, type = "info") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+
+        const bgColor =
+          type === "success"
+            ? "bg-emerald-500/90"
+            : type === "error"
+            ? "bg-red-500/90"
+            : type === "warning"
+            ? "bg-amber-500/90"
+            : "bg-blue-500/90";
+        const icon =
+          type === "success"
+            ? "check_circle"
+            : type === "error"
+            ? "error"
+            : type === "warning"
+            ? "warning"
+            : "info";
+
+        toast.className = `${bgColor} backdrop-blur-lg text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 min-w-[300px] border border-white/10`;
+        toast.style.animation = "slideInRight 0.3s ease-out forwards";
+        toast.innerHTML = `
+          <span class="material-symbols-outlined text-xl">${icon}</span>
+          <span class="font-medium flex-1">${message}</span>
+          <button onclick="this.parentElement.remove()" class="text-white/70 hover:text-white transition-colors">
+            <span class="material-symbols-outlined text-lg">close</span>
+          </button>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.animation = "slideOutRight 0.3s ease-in forwards";
+          setTimeout(() => toast.remove(), 300);
+        }, 4000);
+      }
+    </script>
+
+    <style>
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(100px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes slideOutRight {
+        from {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateX(100px);
+        }
+      }
+    </style>
+
     <script>
       // Sidebar Logic
       const sidebar = document.getElementById("sidebar");
@@ -770,7 +840,7 @@
         // Check if already in cart
         const existing = cart.find((item) => item.category === category);
         if (existing) {
-          alert(`${category} Bundle is already in your cart.`);
+          showToast(`${category} Bundle is already in your cart.`, "warning");
           return;
         }
 
@@ -784,7 +854,7 @@
 
         localStorage.setItem("cart", JSON.stringify(cart));
         updateCartCount();
-        alert(`Added ${category} Bundle to cart!`);
+        showToast(`Added ${category} Bundle to cart!`, "success");
       }
 
       function updateCartCount() {

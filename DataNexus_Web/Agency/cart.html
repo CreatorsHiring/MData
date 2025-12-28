@@ -316,13 +316,9 @@
               </p>
             </div>
             <div
-              class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all"
+              class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center"
             >
-              <img
-                alt="Profile"
-                class="h-full w-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-gTsjan42l3my7G3dN86d6rfU-c2kW9NidATzboZP24DaFfSsYEoIFcJ9v_Aejq2Npoko6m7HnJykFSmYTI_l9G4BemCu7LGYg7YfExBXzLaQ1hc003wqFbgXPSXwfMNwyQP5vvTOW-orELpucmuWY3U5RcCkVseo_XEVX59Bjngi1LM_Ya96hg0dI9bd2W7z3PzqO3hksCI2F0BMnlaKchEP6xs5pe17FYaUI6qPvNXKfWHbxJePOQZFgPuGqoOuYOxLeVPwxMzw"
-              />
+              <span class="material-symbols-outlined text-white text-[18px]">person</span>
             </div>
           </div>
         </div>
@@ -520,6 +516,135 @@
         </div>
       </main>
     </div>
+
+    <!-- Modern Confirm Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 hidden">
+      <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeConfirmModal()"></div>
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="relative glass-card rounded-2xl p-6 w-full max-w-md border border-white/10 shadow-2xl animate-fade-in">
+          <div class="flex items-center gap-4 mb-4">
+            <div id="confirm-icon" class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-2xl">shopping_cart_checkout</span>
+            </div>
+            <div>
+              <h3 id="confirm-title" class="text-xl font-bold text-white">Confirm Checkout</h3>
+              <p id="confirm-message" class="text-slate-400 text-sm">Are you sure you want to proceed?</p>
+            </div>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button onclick="closeConfirmModal()" class="flex-1 py-3 px-4 rounded-xl bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 transition-all">
+              Cancel
+            </button>
+            <button id="confirm-btn" class="flex-1 py-3 px-4 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-hover transition-all flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-lg">check</span>
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success/Error Modal -->
+    <div id="result-modal" class="fixed inset-0 z-50 hidden">
+      <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeResultModal()"></div>
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="relative glass-card rounded-2xl p-8 w-full max-w-md border border-white/10 shadow-2xl animate-fade-in text-center">
+          <div id="result-icon-container" class="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center bg-emerald-500/20">
+            <span id="result-icon" class="material-symbols-outlined text-emerald-400 text-4xl">check_circle</span>
+          </div>
+          <h3 id="result-title" class="text-2xl font-bold text-white mb-2">Success!</h3>
+          <p id="result-message" class="text-slate-400 mb-6">Your order has been processed.</p>
+          <button id="result-btn" onclick="closeResultModal()" class="w-full py-3.5 px-6 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-hover transition-all">
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-6 right-6 z-[100] space-y-3"></div>
+
+    <script>
+      // Modal Functions
+      let confirmCallback = null;
+
+      function showConfirmModal(title, message, onConfirm) {
+        document.getElementById('confirm-title').textContent = title;
+        document.getElementById('confirm-message').textContent = message;
+        confirmCallback = onConfirm;
+        document.getElementById('confirm-modal').classList.remove('hidden');
+      }
+
+      function closeConfirmModal() {
+        document.getElementById('confirm-modal').classList.add('hidden');
+        confirmCallback = null;
+      }
+
+      document.getElementById('confirm-btn').onclick = () => {
+        closeConfirmModal();
+        if (confirmCallback) confirmCallback();
+      };
+
+      function showResultModal(type, title, message, buttonText = 'Continue', onClose = null) {
+        const modal = document.getElementById('result-modal');
+        const iconContainer = document.getElementById('result-icon-container');
+        const icon = document.getElementById('result-icon');
+        const titleEl = document.getElementById('result-title');
+        const msgEl = document.getElementById('result-message');
+        const btn = document.getElementById('result-btn');
+
+        if (type === 'success') {
+          iconContainer.className = 'w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center bg-emerald-500/20';
+          icon.className = 'material-symbols-outlined text-emerald-400 text-4xl';
+          icon.textContent = 'check_circle';
+        } else {
+          iconContainer.className = 'w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center bg-red-500/20';
+          icon.className = 'material-symbols-outlined text-red-400 text-4xl';
+          icon.textContent = 'error';
+        }
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        btn.textContent = buttonText;
+        
+        btn.onclick = () => {
+          closeResultModal();
+          if (onClose) onClose();
+        };
+
+        modal.classList.remove('hidden');
+      }
+
+      function closeResultModal() {
+        document.getElementById('result-modal').classList.add('hidden');
+      }
+
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        
+        const bgColor = type === 'success' ? 'bg-emerald-500/90' : 
+                        type === 'error' ? 'bg-red-500/90' : 'bg-blue-500/90';
+        const icon = type === 'success' ? 'check_circle' : 
+                     type === 'error' ? 'error' : 'info';
+        
+        toast.className = `${bgColor} backdrop-blur-lg text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-slide-up min-w-[280px]`;
+        toast.innerHTML = `
+          <span class="material-symbols-outlined">${icon}</span>
+          <span class="font-medium">${message}</span>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(100px)';
+          toast.style.transition = 'all 0.3s ease';
+          setTimeout(() => toast.remove(), 300);
+        }, 4000);
+      }
+
+    </script>
     <script>
       // Sidebar Logic
       const sidebar = document.getElementById("sidebar");
@@ -617,38 +742,66 @@
 
       async function checkout() {
           const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-          if(cart.length === 0) return alert("Cart is empty!");
+          if(cart.length === 0) {
+            showToast("Your cart is empty!", "error");
+            return;
+          }
           
           const userStr = localStorage.getItem("user");
           const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo", role: "agency" };
 
-          if(!confirm(`Proceed to checkout? Total items: ${cart.length}`)) return;
+          // Calculate total for display
+          const subtotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+          const total = subtotal + 150; // Processing fee
 
-          try {
-             const res = await fetch('/api/market/checkout', {
-                 method: 'POST',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify({ 
-                    agencyId: user.id,
-                    items: cart.map(c => ({ category: c.category })) 
-                 })
-             });
+          // Show confirm modal
+          showConfirmModal(
+            'Confirm Checkout',
+            `You are about to purchase ${cart.length} bundle(s) for $${total.toLocaleString()}. Proceed?`,
+            async () => {
+              // User confirmed, proceed with checkout
+              try {
+                const res = await fetch('/api/market/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                       agencyId: user.id,
+                       items: cart.map(c => ({ category: c.category })) 
+                    })
+                });
 
-             const data = await res.json();
-             
-             if(res.ok) {
-                 alert("Checkout Successful! " + data.message);
-                 localStorage.removeItem('cart');
-                 renderCart();
-                 window.location.href = 'my_library.html';
-             } else {
-                 alert("Checkout failed: " + res.status + " " + (data.error || "Unknown error"));
-             }
+                const data = await res.json();
+                
+                if(res.ok) {
+                    localStorage.removeItem('cart');
+                    renderCart();
+                    showResultModal(
+                      'success',
+                      'Checkout Successful!',
+                      data.message || 'Your datasets have been purchased and are now available in your library.',
+                      'View My Library',
+                      () => { window.location.href = 'my_library.html'; }
+                    );
+                } else {
+                    showResultModal(
+                      'error',
+                      'Checkout Failed',
+                      data.error || `Error ${res.status}: Unknown error occurred.`,
+                      'Try Again'
+                    );
+                }
 
-          } catch (e) {
-              console.error(e);
-              alert("Error during checkout.");
-          }
+              } catch (e) {
+                  console.error(e);
+                  showResultModal(
+                    'error',
+                    'Network Error',
+                    'Could not connect to the server. Please check your connection and try again.',
+                    'Close'
+                  );
+              }
+            }
+          );
       }
     </script>
   </body>
