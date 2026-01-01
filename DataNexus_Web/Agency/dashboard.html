@@ -167,26 +167,6 @@
         id="sidebar"
         class="fixed inset-y-0 left-0 z-50 flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-transform duration-300 -translate-x-full"
       >
-        <div class="p-6 pb-8">
-          <div class="flex items-center gap-3">
-            <div
-              class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20"
-            >
-              <span class="material-symbols-outlined text-[24px]"
-                >smart_toy</span
-              >
-            </div>
-            <div class="flex flex-col">
-              <span
-                class="font-bold text-lg tracking-tight text-white leading-none"
-                >MData</span
-              >
-              <span class="text-xs text-slate-400 font-medium mt-1"
-                >Agency Portal</span
-              >
-            </div>
-          </div>
-        </div>
         <nav
           class="flex-1 px-4 sidebar-scroll overflow-y-auto space-y-1.5 py-2"
         >
@@ -232,8 +212,9 @@
             >
             Cart
             <span
-              class="ml-auto bg-blue-500/20 text-blue-400 text-xs py-0.5 px-2 rounded-full border border-blue-500/20"
-              >2</span
+              id="cart-badge"
+              class="ml-auto bg-blue-500/20 text-blue-400 text-xs py-0.5 px-2 rounded-full border border-blue-500/20 hidden"
+              >0</span
             >
           </a>
           <div class="pt-4 mt-4 border-t border-white/5">
@@ -251,16 +232,6 @@
                 >person</span
               >
               Profile
-            </a>
-            <a
-              class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
-              href="settings.html"
-            >
-              <span
-                class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
-                >settings</span
-              >
-              Settings
             </a>
           </div>
         </nav>
@@ -287,46 +258,37 @@
             >
               <span class="material-symbols-outlined">menu</span>
             </button>
-            <div class="hidden sm:flex flex-col text-left">
-              <span class="text-[10px] text-slate-400 uppercase tracking-wider"
-                >Overview</span
-              >
-              <h1 class="text-sm font-bold text-white uppercase tracking-tight">
-                Dashboard
-              </h1>
+            <div class="flex items-center gap-3">
+              <img src="../MData.png" alt="MData" class="h-8 w-8" />
+              <span class="text-lg font-bold text-white">MData</span>
             </div>
           </div>
           <div class="flex items-center gap-4 ml-auto">
-            <button
-              class="relative rounded-full p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+            <a
+              href="profile.html"
+              class="flex items-center gap-3 cursor-pointer group"
             >
-              <span class="material-symbols-outlined text-[22px]"
-                >notifications</span
-              >
-              <span
-                class="absolute top-2 right-2.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-slate-900 animate-pulse"
-              ></span>
-            </button>
-            <div class="h-6 w-px bg-white/10 mx-1"></div>
-            <div class="flex items-center gap-3 pl-1 cursor-pointer group">
               <div class="text-right hidden sm:block">
                 <p
+                  id="header-name"
                   class="text-sm font-semibold text-white group-hover:text-primary transition-colors leading-none"
                 >
-                  Alex Morgan
+                  Agency User
                 </p>
                 <p
                   class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider"
                 >
-                  Pro Member
+                  Agency
                 </p>
               </div>
               <div
                 class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center"
               >
-                <span class="material-symbols-outlined text-white text-[18px]">person</span>
+                <span class="material-symbols-outlined text-white text-[18px]"
+                  >person</span
+                >
               </div>
-            </div>
+            </a>
           </div>
         </header>
         <main
@@ -357,7 +319,7 @@
               </button>
             </div>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div
               class="glass-card rounded-2xl p-5 flex flex-col justify-between h-32 relative group transition-all duration-300"
             >
@@ -379,15 +341,9 @@
                   $0
                 </h3>
                 <div
-                  class="flex items-center mt-1 text-xs font-medium text-emerald-400"
+                  class="flex items-center mt-1 text-xs font-medium text-slate-400"
                 >
-                  <span class="material-symbols-outlined text-[14px] mr-1"
-                    >trending_up</span
-                  >
-                  <span>+12.5%</span>
-                  <span class="text-slate-500 ml-1 font-normal"
-                    >vs last month</span
-                  >
+                  <span>All time purchases</span>
                 </div>
               </div>
             </div>
@@ -412,74 +368,10 @@
                   0
                 </h3>
                 <div
-                  class="flex items-center mt-1 text-xs font-medium text-emerald-400"
+                  class="flex items-center mt-1 text-xs font-medium text-slate-400"
                 >
-                  <span class="material-symbols-outlined text-[14px] mr-1"
-                    >add_circle</span
-                  >
-                  <span>2 New</span>
-                  <span class="text-slate-500 ml-1 font-normal">this week</span>
+                  <span>Datasets in your library</span>
                 </div>
-              </div>
-            </div>
-            <div
-              class="glass-card rounded-2xl p-5 flex flex-col justify-between h-32 relative group transition-all duration-300"
-            >
-              <div
-                class="absolute right-0 top-0 p-4 opacity-50 group-hover:opacity-100 transition-opacity"
-              >
-                <div
-                  class="h-10 w-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-500"
-                >
-                  <span class="material-symbols-outlined">api</span>
-                </div>
-              </div>
-              <p class="text-sm font-medium text-slate-400">API Usage</p>
-              <div class="w-full">
-                <div class="flex items-end justify-between mb-1">
-                  <h3
-                    class="text-2xl font-bold text-white group-hover:text-glow transition-all"
-                  >
-                    85.2%
-                  </h3>
-                </div>
-                <div
-                  class="w-full bg-slate-700/50 rounded-full h-1.5 overflow-hidden"
-                >
-                  <div
-                    class="bg-gradient-to-r from-orange-400 to-orange-600 h-1.5 rounded-full"
-                    style="width: 85%"
-                  ></div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="glass-card rounded-2xl p-5 flex flex-col justify-between h-32 relative group transition-all duration-300"
-            >
-              <div
-                class="absolute right-0 top-0 p-4 opacity-50 group-hover:opacity-100 transition-opacity"
-              >
-                <div
-                  class="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500"
-                >
-                  <span class="material-symbols-outlined">bolt</span>
-                </div>
-              </div>
-              <p class="text-sm font-medium text-slate-400">Credits</p>
-              <div>
-                <h3
-                  class="text-2xl font-bold text-white group-hover:text-glow transition-all"
-                >
-                  4,200
-                </h3>
-                <button
-                  class="mt-1 text-xs font-medium text-primary hover:text-primary-glow flex items-center transition-colors"
-                >
-                  Top up balance
-                  <span class="material-symbols-outlined text-[12px] ml-1"
-                    >arrow_forward</span
-                  >
-                </button>
               </div>
             </div>
           </div>
@@ -501,116 +393,11 @@
                 >
               </div>
               <div id="trending-container" class="space-y-3">
-                <!-- Dynamic Content Loading... -->
-
-                  <div
-                    class="h-14 w-14 shrink-0 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-lg shadow-blue-900/40 group-hover:scale-105 transition-transform"
-                  >
-                    <span class="material-symbols-outlined text-2xl"
-                      >psychology</span
-                    >
-                  </div>
-                  <div class="flex-1 text-center sm:text-left min-w-0">
-                    <h4 class="text-base font-semibold text-white truncate">
-                      Natural Language Corpus v2.0
-                    </h4>
-                    <div
-                      class="flex flex-wrap justify-center sm:justify-start gap-2 mt-1.5"
-                    >
-                      <span
-                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
-                        >NLP</span
-                      >
-                      <span
-                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
-                        >English</span
-                      >
-                      <span
-                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
-                        >1.2TB</span
-                      >
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-4">
-                    <span class="text-lg font-bold text-white">$1,200</span>
-                    <button
-                      class="rounded-lg bg-white/5 hover:bg-primary border border-white/10 hover:border-primary/50 px-4 py-2 text-sm font-medium text-white transition-all shadow-sm"
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
+                <!-- Dynamically loaded from API -->
                 <div
-                  class="glass-card rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 transition-all hover:border-primary/30 group"
+                  class="glass-card rounded-xl p-4 text-center text-slate-400 text-sm"
                 >
-                  <div
-                    class="h-14 w-14 shrink-0 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-900/40 group-hover:scale-105 transition-transform"
-                  >
-                    <span class="material-symbols-outlined text-2xl"
-                      >visibility</span
-                    >
-                  </div>
-                  <div class="flex-1 text-center sm:text-left min-w-0">
-                    <h4 class="text-base font-semibold text-white truncate">
-                      Urban Traffic Vision Set
-                    </h4>
-                    <div
-                      class="flex flex-wrap justify-center sm:justify-start gap-2 mt-1.5"
-                    >
-                      <span
-                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
-                        >Computer Vision</span
-                      >
-                      <span
-                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
-                        >Video</span
-                      >
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-4">
-                    <span class="text-lg font-bold text-white">$850</span>
-                    <button
-                      class="rounded-lg bg-white/5 hover:bg-primary border border-white/10 hover:border-primary/50 px-4 py-2 text-sm font-medium text-white transition-all shadow-sm"
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-                <div
-                  class="glass-card rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 transition-all hover:border-primary/30 group"
-                >
-                  <div
-                    class="h-14 w-14 shrink-0 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white shadow-lg shadow-purple-900/40 group-hover:scale-105 transition-transform"
-                  >
-                    <span class="material-symbols-outlined text-2xl"
-                      >graphic_eq</span
-                    >
-                  </div>
-                  <div class="flex-1 text-center sm:text-left min-w-0">
-                    <h4 class="text-base font-semibold text-white truncate">
-                      Multilingual Speech Data
-                    </h4>
-                    <div
-                      class="flex flex-wrap justify-center sm:justify-start gap-2 mt-1.5"
-                    >
-                      <span
-                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
-                        >Audio</span
-                      >
-                      <span
-                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
-                        >High-Fidelity</span
-                      >
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-4">
-                    <span class="text-lg font-bold text-white">$2,100</span>
-                    <button
-                      class="rounded-lg bg-white/5 hover:bg-primary border border-white/10 hover:border-primary/50 px-4 py-2 text-sm font-medium text-white transition-all shadow-sm"
-                    >
-                      View
-                    </button>
-                  </div>
+                  Loading trending datasets...
                 </div>
               </div>
             </div>
@@ -627,78 +414,21 @@
               </div>
               <div class="glass-card rounded-xl p-5 h-fit">
                 <div
-                  class="relative border-l border-white/10 ml-2 space-y-8 py-2"
+                  id="activity-container"
+                  class="relative border-l border-white/10 ml-2 space-y-6 py-2"
                 >
-                  <div class="ml-6 relative">
-                    <span
-                      class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 border border-primary ring-4 ring-slate-900/50"
-                    >
-                      <span
-                        class="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"
-                      ></span>
-                    </span>
-                    <h3 class="text-sm font-semibold text-white">
-                      Purchased Dataset
-                    </h3>
-                    <p class="text-xs text-slate-400 mt-1">
-                      "Medical Imaging Pack"
-                    </p>
-                    <time class="block text-[10px] text-slate-500 mt-1"
-                      >Just now</time
-                    >
-                  </div>
-                  <div class="ml-6 relative">
-                    <span
-                      class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 border border-slate-600"
-                    >
-                    </span>
-                    <h3 class="text-sm font-semibold text-white">
-                      Download Completed
-                    </h3>
-                    <p class="text-xs text-slate-400 mt-1">
-                      "Financial Forecasting Q3"
-                    </p>
-                    <time class="block text-[10px] text-slate-500 mt-1"
-                      >2 hours ago</time
-                    >
-                  </div>
-                  <div class="ml-6 relative">
-                    <span
-                      class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 border border-orange-500"
-                    >
-                    </span>
-                    <h3 class="text-sm font-semibold text-white">
-                      Credits Added
-                    </h3>
-                    <p class="text-xs text-slate-400 mt-1">
-                      Auto-renewal of monthly credits
-                    </p>
-                    <time class="block text-[10px] text-slate-500 mt-1"
-                      >1 day ago</time
-                    >
-                  </div>
-                  <div class="ml-6 relative">
-                    <span
-                      class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 border border-slate-600"
-                    >
-                    </span>
-                    <h3 class="text-sm font-semibold text-white">
-                      Invoice Generated
-                    </h3>
-                    <p class="text-xs text-slate-400 mt-1">
-                      Inv-2023-001 available
-                    </p>
-                    <time class="block text-[10px] text-slate-500 mt-1"
-                      >3 days ago</time
-                    >
+                  <!-- Dynamically loaded from purchases -->
+                  <div class="ml-6 relative text-slate-400 text-sm">
+                    Loading recent activity...
                   </div>
                 </div>
                 <div class="mt-4 pt-4 border-t border-white/5">
-                  <button
-                    class="w-full py-2 text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                  <a
+                    href="my_library.html"
+                    class="w-full py-2 text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors block text-center"
                   >
-                    View Full History
-                  </button>
+                    View My Library
+                  </a>
                 </div>
               </div>
             </div>
@@ -707,6 +437,24 @@
       </div>
     </div>
     <script>
+      // Helper function for relative time
+      function getTimeAgo(date) {
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return "Just now";
+        if (diffMins < 60)
+          return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+        if (diffHours < 24)
+          return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+        if (diffDays < 7)
+          return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+        return date.toLocaleDateString();
+      }
+
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
       const toggleButtons = document.querySelectorAll(".sidebar-toggle");
@@ -716,69 +464,118 @@
         overlay.classList.toggle("hidden");
       }
 
-      // Hover to open sidebar
       toggleButtons.forEach((btn) => {
         btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            toggleSidebar();
-        });
-        btn.addEventListener("mouseenter", () => {
-             if (sidebar && sidebar.classList.contains("-translate-x-full")) {
-                 toggleSidebar();
-             }
+          e.stopPropagation();
+          toggleSidebar();
         });
       });
       overlay.addEventListener("click", toggleSidebar);
 
+      // Hover to reveal sidebar from edge
+      let hoverTimeout;
+      document.addEventListener("mousemove", (e) => {
+        if (e.clientX < 20) {
+          clearTimeout(hoverTimeout);
+          hoverTimeout = setTimeout(() => {
+            if (sidebar.classList.contains("-translate-x-full")) {
+              sidebar.classList.remove("-translate-x-full");
+              overlay.classList.remove("hidden");
+            }
+          }, 200);
+        }
+      });
+
+      // Update cart count
+      async function updateCartCount(agencyId) {
+        try {
+          const res = await fetch(`/api/agency/cart?agencyId=${agencyId}`);
+          const data = await res.json();
+          const count = data.cart?.length || 0;
+          const badge = document.getElementById("cart-badge");
+          if (badge) {
+            badge.textContent = count;
+            badge.classList.toggle("hidden", count === 0);
+          }
+        } catch (e) {
+          console.error("Error loading cart count:", e);
+        }
+      }
+
       // --- Real Data Logic ---
       document.addEventListener("DOMContentLoaded", async () => {
-          const userStr = localStorage.getItem("user");
-          // if (!userStr) {
-          //   // For demo, if no user, mock one or redirect. Ideally redirect.
-          //   // window.location.href = "../index.html";
-          // }
-          const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo_User", name: "Demo Agency", email: "demo@agency.com", role: "agency" };
-          
-          if (user.role !== 'agency' && user.role !== 'admin') {
-               // Optional: redirect regular users
-               // window.location.href = "../User/dashboard.html";
+        const userStr = localStorage.getItem("user");
+        // if (!userStr) {
+        //   // For demo, if no user, mock one or redirect. Ideally redirect.
+        //   // window.location.href = "../index.html";
+        // }
+        const user = userStr
+          ? JSON.parse(userStr)
+          : {
+              id: "Agency_Demo_User",
+              name: "Demo Agency",
+              email: "demo@agency.com",
+              role: "agency",
+            };
+
+        if (user.role !== "agency" && user.role !== "admin") {
+          // Optional: redirect regular users
+          // window.location.href = "../User/dashboard.html";
+        }
+
+        // Update header name
+        const headerName = document.getElementById("header-name");
+        if (headerName) headerName.textContent = user.name || "Agency User";
+
+        // Update cart count
+        await updateCartCount(user.id);
+
+        const welcomeName = document.querySelector("h2.text-3xl");
+        if (welcomeName)
+          welcomeName.innerHTML = `Welcome back, ${
+            user.name.split(" ")[0]
+          } <span class="animate-bounce inline-block">👋</span>`;
+
+        try {
+          // 1. Fetch Purchases (Total Spend & Active Datasets)
+          const purchaseRes = await fetch(
+            `/api/agency/purchases?agencyId=${user.id}`
+          );
+          const purchases = await purchaseRes.json();
+
+          if (Array.isArray(purchases)) {
+            const totalSpend = purchases.reduce(
+              (sum, item) => sum + (item.sold_price || 0),
+              0
+            );
+            document.getElementById(
+              "total-spend"
+            ).textContent = `$${totalSpend.toLocaleString(undefined, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            })}`;
+            document.getElementById("active-datasets").textContent =
+              purchases.length;
           }
-          
-          // Identify user in UI if elements exist
-          const headerName = document.querySelector("header .text-sm.font-semibold.text-white");
-          if(headerName) headerName.textContent = user.name;
-          
-          const welcomeName = document.querySelector("h2.text-3xl");
-          if(welcomeName) welcomeName.innerHTML = `Welcome back, ${user.name.split(' ')[0]} <span class="animate-bounce inline-block">👋</span>`;
 
-          try {
-              // 1. Fetch Purchases (Total Spend & Active Datasets)
-              const purchaseRes = await fetch(`/api/agency/purchases?agencyId=${user.id}`);
-              const purchases = await purchaseRes.json();
-              
-              if (Array.isArray(purchases)) {
-                  const totalSpend = purchases.reduce((sum, item) => sum + (item.sold_price || 0), 0);
-                  document.getElementById("total-spend").textContent = `$${totalSpend.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
-                  document.getElementById("active-datasets").textContent = purchases.length;
-              }
+          // 2. Fetch Market Summaries (Trending)
+          const marketRes = await fetch(`/api/market/summaries`);
+          const summaries = await marketRes.json();
 
-              // 2. Fetch Market Summaries (Trending)
-              const marketRes = await fetch(`/api/market/summaries`);
-              const summaries = await marketRes.json();
-              
-              const trendingContainer = document.getElementById("trending-container");
-              trendingContainer.innerHTML = "";
-              
-              // Sort by avg_quality desc for "Trending"
-              summaries.sort((a,b) => b.avg_quality - a.avg_quality);
-              const top3 = summaries.slice(0, 3);
-              
-              if (top3.length === 0) {
-                  trendingContainer.innerHTML = `<p class="text-slate-400 p-4">No trending datasets available yet.</p>`;
-              }
-              
-              top3.forEach(cat => {
-                  const html = `
+          const trendingContainer =
+            document.getElementById("trending-container");
+          trendingContainer.innerHTML = "";
+
+          // Sort by avg_quality desc for "Trending"
+          summaries.sort((a, b) => b.avg_quality - a.avg_quality);
+          const top3 = summaries.slice(0, 3);
+
+          if (top3.length === 0) {
+            trendingContainer.innerHTML = `<p class="text-slate-400 p-4">No trending datasets available yet.</p>`;
+          }
+
+          top3.forEach((cat) => {
+            const html = `
                 <div class="glass-card rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 transition-all hover:border-primary/30 group">
                   <div class="h-14 w-14 shrink-0 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-lg shadow-blue-900/40 group-hover:scale-105 transition-transform">
                     <span class="material-symbols-outlined text-2xl">category</span>
@@ -791,18 +588,61 @@
                     </div>
                   </div>
                   <div class="flex items-center gap-4">
-                    <span class="text-lg font-bold text-white">$25.00<span class="text-xs text-slate-400 font-normal">/file</span></span>
+                    <span class="text-lg font-bold text-white">₹25.00<span class="text-xs text-slate-400 font-normal">/file</span></span>
                     <a href="browse_datasets.html" class="rounded-lg bg-white/5 hover:bg-primary border border-white/10 hover:border-primary/50 px-4 py-2 text-sm font-medium text-white transition-all shadow-sm">
                       View
                     </a>
                   </div>
                 </div>`;
-                trendingContainer.insertAdjacentHTML('beforeend', html);
-              });
+            trendingContainer.insertAdjacentHTML("beforeend", html);
+          });
 
-          } catch (e) {
-              console.error("Dashboard Load Error:", e);
+          // 3. Populate Recent Activity from purchases
+          const activityContainer =
+            document.getElementById("activity-container");
+          activityContainer.innerHTML = "";
+
+          if (purchases.length === 0) {
+            activityContainer.innerHTML = `<div class="ml-6 relative text-slate-400 text-sm">No recent activity. Start browsing datasets!</div>`;
+          } else {
+            // Show last 4 purchases
+            const recentPurchases = purchases.slice(0, 4);
+
+            recentPurchases.forEach((purchase, index) => {
+              const isFirst = index === 0;
+              const purchaseDate = new Date(
+                purchase.transaction_date || purchase.soldAt
+              );
+              const timeAgo = getTimeAgo(purchaseDate);
+
+              const activityHtml = `
+                <div class="ml-6 relative">
+                  <span class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 border ${
+                    isFirst
+                      ? "border-primary ring-4 ring-slate-900/50"
+                      : "border-slate-600"
+                  }">
+                    ${
+                      isFirst
+                        ? '<span class="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>'
+                        : ""
+                    }
+                  </span>
+                  <h3 class="text-sm font-semibold text-white">Purchased Dataset</h3>
+                  <p class="text-xs text-slate-400 mt-1">"${
+                    purchase.market_category ||
+                    purchase.original_name ||
+                    "Dataset"
+                  } Bundle"</p>
+                  <time class="block text-[10px] text-slate-500 mt-1">${timeAgo}</time>
+                </div>
+              `;
+              activityContainer.insertAdjacentHTML("beforeend", activityHtml);
+            });
           }
+        } catch (e) {
+          console.error("Dashboard Load Error:", e);
+        }
       });
     </script>
   </body>

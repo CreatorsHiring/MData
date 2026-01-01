@@ -166,24 +166,6 @@
       id="sidebar"
       class="fixed inset-y-0 left-0 z-50 flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-transform duration-300 -translate-x-full"
     >
-      <div class="p-6 pb-8">
-        <div class="flex items-center gap-3">
-          <div
-            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20"
-          >
-            <span class="material-symbols-outlined text-[24px]">smart_toy</span>
-          </div>
-          <div class="flex flex-col">
-            <span
-              class="font-bold text-lg tracking-tight text-white leading-none"
-              >MData</span
-            >
-            <span class="text-xs text-slate-400 font-medium mt-1"
-              >Agency Portal</span
-            >
-          </div>
-        </div>
-      </div>
       <nav class="flex-1 px-4 sidebar-scroll overflow-y-auto space-y-1.5 py-2">
         <a
           class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
@@ -247,16 +229,6 @@
             >
             Profile
           </a>
-          <a
-            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
-            href="settings.html"
-          >
-            <span
-              class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
-              >settings</span
-            >
-            Settings
-          </a>
         </div>
       </nav>
       <div class="p-4 mt-auto border-t border-white/5">
@@ -281,38 +253,27 @@
           >
             <span class="material-symbols-outlined">menu</span>
           </button>
-          <div class="hidden sm:flex flex-col text-left">
-            <span class="text-[10px] text-slate-400 uppercase tracking-wider"
-              >Marketplace</span
-            >
-            <h1 class="text-sm font-bold text-white uppercase tracking-tight">
-              Browse Datasets
-            </h1>
+          <div class="flex items-center gap-3">
+            <img src="../MData.png" alt="MData" class="h-8 w-8" />
+            <span class="text-lg font-bold text-white">MData</span>
           </div>
         </div>
         <div class="flex items-center gap-4 ml-auto">
-          <button
-            class="relative p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-colors"
+          <a
+            href="profile.html"
+            class="flex items-center gap-3 cursor-pointer group"
           >
-            <span class="material-symbols-outlined text-[22px]"
-              >notifications</span
-            >
-            <span
-              class="absolute top-2 right-2.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-slate-900 animate-pulse"
-            ></span>
-          </button>
-          <div class="h-6 w-px bg-white/10 mx-1"></div>
-          <div class="flex items-center gap-3 pl-1 cursor-pointer group">
             <div class="text-right hidden sm:block">
               <p
+                id="header-name"
                 class="text-sm font-semibold text-white group-hover:text-primary transition-colors leading-none"
               >
-                Alex Morgan
+                Agency User
               </p>
               <p
                 class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider"
               >
-                Pro Member
+                Agency
               </p>
             </div>
             <div
@@ -322,7 +283,7 @@
                 >person</span
               >
             </div>
-          </div>
+          </a>
         </div>
       </header>
       <main class="flex-1 overflow-y-auto scroll-smooth">
@@ -385,194 +346,33 @@
               >dataset</span
             >
           </section>
-          <div class="flex flex-col lg:flex-row gap-8 items-start">
-            <aside
-              class="w-full lg:w-72 shrink-0 space-y-6 lg:sticky lg:top-8 z-10"
-            >
-              <div class="glass-card p-6 rounded-xl">
-                <div class="flex items-center justify-between mb-6">
-                  <h3 class="text-white font-bold flex items-center gap-2">
-                    <span class="material-symbols-outlined text-blue-400"
-                      >tune</span
-                    >
-                    Filters
-                  </h3>
-                  <button
-                    class="text-xs text-blue-400 hover:text-blue-300 font-medium underline decoration-blue-500/30"
-                  >
-                    Reset
-                  </button>
-                </div>
-                <div class="space-y-4 mb-6">
-                  <p
-                    class="text-xs font-bold text-slate-500 uppercase tracking-widest"
-                  >
-                    Modality
-                  </p>
-                  <div class="space-y-2">
-                    <label
-                      class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2"
-                    >
-                      <div class="relative flex items-center">
-                        <input
-                          class="peer appearance-none w-5 h-5 border border-slate-600 rounded bg-slate-800/50 checked:bg-primary checked:border-primary transition-all"
-                          type="checkbox"
-                        />
-                        <span
-                          class="material-symbols-outlined absolute inset-0 text-white text-[16px] opacity-0 peer-checked:opacity-100 pointer-events-none"
-                          >check</span
-                        >
-                      </div>
-                      <span
-                        class="text-sm text-slate-300 group-hover:text-white transition-colors"
-                        >Computer Vision</span
-                      >
-                    </label>
-                    <label
-                      class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2"
-                    >
-                      <div class="relative flex items-center">
-                        <input
-                          checked=""
-                          class="peer appearance-none w-5 h-5 border border-slate-600 rounded bg-slate-800/50 checked:bg-primary checked:border-primary transition-all"
-                          type="checkbox"
-                        />
-                        <span
-                          class="material-symbols-outlined absolute inset-0 text-white text-[16px] opacity-0 peer-checked:opacity-100 pointer-events-none"
-                          >check</span
-                        >
-                      </div>
-                      <span
-                        class="text-sm text-slate-300 group-hover:text-white transition-colors"
-                        >NLP / Text</span
-                      >
-                    </label>
-                    <label
-                      class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2"
-                    >
-                      <div class="relative flex items-center">
-                        <input
-                          class="peer appearance-none w-5 h-5 border border-slate-600 rounded bg-slate-800/50 checked:bg-primary checked:border-primary transition-all"
-                          type="checkbox"
-                        />
-                        <span
-                          class="material-symbols-outlined absolute inset-0 text-white text-[16px] opacity-0 peer-checked:opacity-100 pointer-events-none"
-                          >check</span
-                        >
-                      </div>
-                      <span
-                        class="text-sm text-slate-300 group-hover:text-white transition-colors"
-                        >Audio &amp; Speech</span
-                      >
-                    </label>
-                    <label
-                      class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2"
-                    >
-                      <div class="relative flex items-center">
-                        <input
-                          class="peer appearance-none w-5 h-5 border border-slate-600 rounded bg-slate-800/50 checked:bg-primary checked:border-primary transition-all"
-                          type="checkbox"
-                        />
-                        <span
-                          class="material-symbols-outlined absolute inset-0 text-white text-[16px] opacity-0 peer-checked:opacity-100 pointer-events-none"
-                          >check</span
-                        >
-                      </div>
-                      <span
-                        class="text-sm text-slate-300 group-hover:text-white transition-colors"
-                        >Tabular / Structured</span
-                      >
-                    </label>
-                  </div>
-                </div>
-                <div class="h-px bg-white/10 mb-6"></div>
-                <div class="space-y-4 mb-6">
-                  <div class="flex items-center justify-between">
-                    <p
-                      class="text-xs font-bold text-slate-500 uppercase tracking-widest"
-                    >
-                      Price Range
-                    </p>
-                    <span class="text-xs text-blue-400 font-mono"
-                      >$0 - $5k</span
-                    >
-                  </div>
-                  <input
-                    class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-blue-400"
-                    type="range"
-                  />
-                </div>
-                <div class="h-px bg-white/10 mb-6"></div>
-                <div class="space-y-4">
-                  <p
-                    class="text-xs font-bold text-slate-500 uppercase tracking-widest"
-                  >
-                    Format
-                  </p>
-                  <div class="flex flex-wrap gap-2">
-                    <button
-                      class="px-3 py-1.5 rounded-md bg-blue-500/20 border border-blue-500/30 text-blue-200 text-xs font-medium hover:bg-blue-500/30 transition-colors"
-                    >
-                      JSON
-                    </button>
-                    <button
-                      class="px-3 py-1.5 rounded-md bg-slate-800/50 border border-slate-700 text-slate-400 text-xs font-medium hover:bg-slate-700 hover:text-white transition-colors"
-                    >
-                      CSV
-                    </button>
-                    <button
-                      class="px-3 py-1.5 rounded-md bg-slate-800/50 border border-slate-700 text-slate-400 text-xs font-medium hover:bg-slate-700 hover:text-white transition-colors"
-                    >
-                      Parquet
-                    </button>
-                    <button
-                      class="px-3 py-1.5 rounded-md bg-slate-800/50 border border-slate-700 text-slate-400 text-xs font-medium hover:bg-slate-700 hover:text-white transition-colors"
-                    >
-                      DICOM
-                    </button>
-                    <button
-                      class="px-3 py-1.5 rounded-md bg-slate-800/50 border border-slate-700 text-slate-400 text-xs font-medium hover:bg-slate-700 hover:text-white transition-colors"
-                    >
-                      WAV
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </aside>
+          <div class="w-full">
             <div class="flex-1 min-w-0">
               <div
                 class="flex flex-wrap items-center justify-between mb-6 gap-4 p-1"
               >
                 <p class="text-slate-400 text-sm">
-                  Showing <span class="text-white font-bold">124</span> results
+                  Showing
+                  <span id="results-count" class="text-white font-bold">0</span>
+                  results
                 </p>
                 <div class="flex items-center gap-3">
-                  <div class="relative group">
-                    <select
-                      class="appearance-none bg-slate-800/50 border border-white/10 text-white text-sm rounded-lg pl-4 pr-10 py-2 focus:ring-1 focus:ring-primary focus:outline-none cursor-pointer hover:bg-slate-800 transition-colors"
-                    >
-                      <option>Relevance</option>
-                      <option>Newest</option>
-                      <option>Price: Low to High</option>
-                      <option>Price: High to Low</option>
-                    </select>
-                    <span
-                      class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-lg"
-                      >sort</span
-                    >
-                  </div>
                   <div
                     class="bg-slate-800/50 border border-white/10 rounded-lg p-1 flex"
                   >
                     <button
+                      id="grid-view-btn"
                       class="p-1.5 rounded bg-slate-700/80 text-white shadow-sm"
+                      onclick="setViewMode('grid')"
                     >
                       <span class="material-symbols-outlined text-xl"
                         >grid_view</span
                       >
                     </button>
                     <button
+                      id="list-view-btn"
                       class="p-1.5 rounded text-slate-500 hover:text-white transition-colors"
+                      onclick="setViewMode('list')"
                     >
                       <span class="material-symbols-outlined text-xl"
                         >view_list</span
@@ -593,34 +393,12 @@
                   <p>Loading market data...</p>
                 </div>
               </div>
-              <!-- Static content removed -->
-              <div class="flex items-center justify-center mt-12 gap-2">
-                <button
-                  class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-50 transition-colors"
-                >
-                  <span class="material-symbols-outlined">chevron_left</span>
-                </button>
-                <button
-                  class="size-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold shadow-lg shadow-blue-500/20"
-                >
-                  1
-                </button>
-                <button
-                  class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
-                >
-                  2
-                </button>
-                <button
-                  class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
-                >
-                  3
-                </button>
-                <span class="text-slate-500 px-2">...</span>
-                <button
-                  class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
-                >
-                  <span class="material-symbols-outlined">chevron_right</span>
-                </button>
+              <!-- Dynamic Pagination -->
+              <div
+                id="pagination-container"
+                class="flex items-center justify-center mt-12 gap-2"
+              >
+                <!-- Pagination will be inserted here -->
               </div>
             </div>
           </div>
@@ -737,7 +515,26 @@
 
       overlay.addEventListener("click", closeSidebar);
 
+      // Hover to reveal sidebar from edge
+      let hoverTimeout;
+      document.addEventListener("mousemove", (e) => {
+        if (e.clientX < 20) {
+          clearTimeout(hoverTimeout);
+          hoverTimeout = setTimeout(() => {
+            if (sidebar.classList.contains("-translate-x-full")) {
+              openSidebar();
+            }
+          }, 200);
+        }
+      });
+
       // --- Real Data Logic ---
+      let allCategories = [];
+      let filteredCategories = [];
+      let currentPage = 1;
+      const itemsPerPage = 6;
+      let viewMode = "grid";
+
       document.addEventListener("DOMContentLoaded", async () => {
         const userStr = localStorage.getItem("user");
         const user = userStr
@@ -749,73 +546,230 @@
               role: "agency",
             };
 
-        if (user.role !== "agency") {
-          // console.warn("Not logged in as agency");
-        }
+        // Update header name
+        const headerName = document.getElementById("header-name");
+        if (headerName) headerName.textContent = user.name || "Agency User";
 
         const grid = document.getElementById("dataset-grid");
+        const searchInput = document.querySelector('input[type="text"]');
+        const searchBtn = document.querySelector("button.bg-primary");
+
+        // Search functionality
+        if (searchBtn) {
+          searchBtn.addEventListener("click", () => {
+            const query = searchInput.value.trim().toLowerCase();
+            filterAndRender(query);
+          });
+        }
+        if (searchInput) {
+          searchInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              const query = searchInput.value.trim().toLowerCase();
+              filterAndRender(query);
+            }
+          });
+        }
 
         try {
           const res = await fetch("/api/market/summaries");
-          const categories = await res.json();
-
-          grid.innerHTML = "";
-
-          if (categories.length === 0) {
-            grid.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500">No datasets available.</div>`;
-            return;
-          }
-
-          categories.forEach((cat) => {
-            // Generate reliable mock images/prices based on category data
-            const price = (cat.total_files * 25).toLocaleString();
-            const image = getCategoryImage(cat.market_category);
-
-            const card = `
-                    <div class="glass-card rounded-xl overflow-hidden group flex flex-col h-full hover:border-primary/50 transition-all">
-                      <div class="relative h-48 overflow-hidden">
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 opacity-60"></div>
-                        <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" src="${image}" />
-                        <div class="absolute top-3 right-3 z-20">
-                           <span class="bg-black/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
-                             <span class="material-symbols-outlined text-xs text-yellow-400">verified</span> VERIFIED
-                           </span>
-                        </div>
-                        <div class="absolute bottom-3 left-3 z-20 flex gap-2">
-                           <span class="bg-blue-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg uppercase">${cat.market_category}</span>
-                           <span class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10">${cat.total_files} Files</span>
-                        </div>
-                      </div>
-                      <div class="p-5 flex-1 flex flex-col">
-                        <div class="flex justify-between items-start mb-2">
-                           <h3 class="text-lg font-bold text-white leading-tight group-hover:text-blue-400 transition-colors">${cat.market_category} Bundle</h3>
-                           <div class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20">
-                              <span class="material-symbols-outlined text-xs text-yellow-400 fill-current">star</span>
-                              <span class="text-xs font-bold text-yellow-200">${cat.avg_quality}</span>
-                           </div>
-                        </div>
-                        <p class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed">
-                           Complete collection of ${cat.total_files} verified datasets in ${cat.market_category}. High quality scores guaranteed.
-                        </p>
-                        <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
-                           <div>
-                              <span class="text-xs text-slate-500 block mb-0.5">Total Value</span>
-                              <span class="text-lg font-bold text-white">$${price}</span>
-                           </div>
-                           <button onclick="addToCart('${cat.market_category}', '${price}', '${cat.total_files}', '${cat.avg_quality}')" class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn">
-                              <span class="material-symbols-outlined group-hover/btn:scale-110 transition-transform">add_shopping_cart</span>
-                           </button>
-                        </div>
-                      </div>
-                    </div>
-                  `;
-            grid.insertAdjacentHTML("beforeend", card);
-          });
+          allCategories = await res.json();
+          filteredCategories = [...allCategories];
+          renderPage(1);
         } catch (e) {
           console.error(e);
           grid.innerHTML = `<div class="col-span-full text-center text-red-400">Error loading market data.</div>`;
         }
       });
+
+      function filterAndRender(query) {
+        if (!query) {
+          filteredCategories = [...allCategories];
+        } else {
+          filteredCategories = allCategories.filter((cat) =>
+            cat.market_category.toLowerCase().includes(query)
+          );
+        }
+        currentPage = 1;
+        renderPage(1);
+      }
+
+      function renderPage(page) {
+        currentPage = page;
+        const grid = document.getElementById("dataset-grid");
+        const resultsCount = document.getElementById("results-count");
+        const paginationContainer = document.getElementById(
+          "pagination-container"
+        );
+
+        // Update results count
+        if (resultsCount) {
+          resultsCount.textContent = filteredCategories.length;
+        }
+
+        grid.innerHTML = "";
+
+        if (filteredCategories.length === 0) {
+          grid.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500">No datasets found.</div>`;
+          paginationContainer.innerHTML = "";
+          return;
+        }
+
+        // Calculate pagination
+        const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+        const startIdx = (page - 1) * itemsPerPage;
+        const endIdx = Math.min(
+          startIdx + itemsPerPage,
+          filteredCategories.length
+        );
+        const pageItems = filteredCategories.slice(startIdx, endIdx);
+
+        // Render items based on view mode
+        pageItems.forEach((cat) => {
+          const price = (cat.total_files * 25).toLocaleString();
+          const image = getCategoryImage(cat.market_category);
+
+          let card;
+          if (viewMode === "list") {
+            card = `
+              <div class="col-span-full glass-card rounded-xl overflow-hidden group flex flex-row items-stretch hover:border-primary/50 transition-all">
+                <div class="relative w-48 shrink-0 overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent to-slate-900/80 z-10"></div>
+                  <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="${image}" />
+                </div>
+                <div class="p-5 flex-1 flex items-center justify-between gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <h3 class="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">${cat.market_category} Bundle</h3>
+                      <span class="bg-blue-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">${cat.total_files} Files</span>
+                      <span class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20">
+                        <span class="material-symbols-outlined text-xs text-yellow-400">star</span>
+                        <span class="text-xs font-bold text-yellow-200">${cat.avg_quality}</span>
+                      </span>
+                    </div>
+                    <p class="text-slate-400 text-sm">Complete collection of ${cat.total_files} verified datasets. High quality scores guaranteed.</p>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <span class="text-xl font-bold text-white">₹${price}</span>
+                    <button onclick="addToCart('${cat.market_category}', '${price}', '${cat.total_files}', '${cat.avg_quality}')" class="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                      <span class="material-symbols-outlined">add_shopping_cart</span>
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else {
+            card = `
+              <div class="glass-card rounded-xl overflow-hidden group flex flex-col h-full hover:border-primary/50 transition-all">
+                <div class="relative h-48 overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 opacity-60"></div>
+                  <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" src="${image}" />
+                  <div class="absolute top-3 right-3 z-20">
+                     <span class="bg-black/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                       <span class="material-symbols-outlined text-xs text-yellow-400">verified</span> VERIFIED
+                     </span>
+                  </div>
+                  <div class="absolute bottom-3 left-3 z-20 flex gap-2">
+                     <span class="bg-blue-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg uppercase">${cat.market_category}</span>
+                     <span class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10">${cat.total_files} Files</span>
+                  </div>
+                </div>
+                <div class="p-5 flex-1 flex flex-col">
+                  <div class="flex justify-between items-start mb-2">
+                     <h3 class="text-lg font-bold text-white leading-tight group-hover:text-blue-400 transition-colors">${cat.market_category} Bundle</h3>
+                     <div class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20">
+                        <span class="material-symbols-outlined text-xs text-yellow-400 fill-current">star</span>
+                        <span class="text-xs font-bold text-yellow-200">${cat.avg_quality}</span>
+                     </div>
+                  </div>
+                  <p class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed">
+                     Complete collection of ${cat.total_files} verified datasets in ${cat.market_category}. High quality scores guaranteed.
+                  </p>
+                  <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                     <div>
+                        <span class="text-xs text-slate-500 block mb-0.5">Total Value</span>
+                        <span class="text-lg font-bold text-white">₹${price}</span>
+                     </div>
+                     <button onclick="addToCart('${cat.market_category}', '${price}', '${cat.total_files}', '${cat.avg_quality}')" class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn">
+                        <span class="material-symbols-outlined group-hover/btn:scale-110 transition-transform">add_shopping_cart</span>
+                     </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+          grid.insertAdjacentHTML("beforeend", card);
+        });
+
+        // Render pagination
+        renderPagination(totalPages, page);
+      }
+
+      function renderPagination(totalPages, currentPage) {
+        const container = document.getElementById("pagination-container");
+        if (totalPages <= 1) {
+          container.innerHTML = "";
+          return;
+        }
+
+        let html = `
+          <button onclick="goToPage(${currentPage - 1})" ${
+          currentPage === 1 ? "disabled" : ""
+        } class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+        `;
+
+        for (let i = 1; i <= totalPages; i++) {
+          if (i === currentPage) {
+            html += `<button class="size-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold shadow-lg shadow-blue-500/20">${i}</button>`;
+          } else {
+            html += `<button onclick="goToPage(${i})" class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-colors">${i}</button>`;
+          }
+        }
+
+        html += `
+          <button onclick="goToPage(${currentPage + 1})" ${
+          currentPage === totalPages ? "disabled" : ""
+        } class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        `;
+
+        container.innerHTML = html;
+      }
+
+      function goToPage(page) {
+        const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+        if (page >= 1 && page <= totalPages) {
+          renderPage(page);
+          window.scrollTo({ top: 400, behavior: "smooth" });
+        }
+      }
+
+      function setViewMode(mode) {
+        viewMode = mode;
+        const gridBtn = document.getElementById("grid-view-btn");
+        const listBtn = document.getElementById("list-view-btn");
+        const grid = document.getElementById("dataset-grid");
+
+        if (mode === "grid") {
+          gridBtn.className =
+            "p-1.5 rounded bg-slate-700/80 text-white shadow-sm";
+          listBtn.className =
+            "p-1.5 rounded text-slate-500 hover:text-white transition-colors";
+          grid.className =
+            "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6";
+        } else {
+          listBtn.className =
+            "p-1.5 rounded bg-slate-700/80 text-white shadow-sm";
+          gridBtn.className =
+            "p-1.5 rounded text-slate-500 hover:text-white transition-colors";
+          grid.className = "grid grid-cols-1 gap-4";
+        }
+
+        renderPage(currentPage);
+      }
 
       function getCategoryImage(category) {
         const map = {
@@ -827,6 +781,8 @@
             "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80",
           "Computer Vision":
             "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80",
+          General:
+            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80",
         };
         return (
           map[category] ||
@@ -834,37 +790,63 @@
         );
       }
 
-      function addToCart(category, price, files, quality) {
-        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      async function addToCart(category, price, files, quality) {
+        const userStr = localStorage.getItem("user");
+        const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo_User" };
 
-        // Check if already in cart
-        const existing = cart.find((item) => item.category === category);
-        if (existing) {
-          showToast(`${category} Bundle is already in your cart.`, "warning");
-          return;
+        try {
+          const res = await fetch("/api/agency/cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              agencyId: user.id,
+              item: {
+                category,
+                price: parseFloat(price.replace(/,/g, "")),
+                files: parseInt(files),
+                quality: parseFloat(quality),
+                image: getCategoryImage(category),
+              },
+            }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            showToast(`Added ${category} Bundle to cart!`, "success");
+            updateCartCount();
+          } else if (res.status === 409) {
+            showToast(`${category} Bundle is already in your cart.`, "warning");
+          } else {
+            showToast(data.error || "Failed to add to cart", "error");
+          }
+        } catch (e) {
+          console.error(e);
+          showToast("Error adding to cart", "error");
         }
-
-        cart.push({
-          category: category,
-          price: parseFloat(price.replace(/,/g, "")), // parse formatted price
-          files: files,
-          quality: quality,
-          image: getCategoryImage(category),
-        });
-
-        localStorage.setItem("cart", JSON.stringify(cart));
-        updateCartCount();
-        showToast(`Added ${category} Bundle to cart!`, "success");
       }
 
-      function updateCartCount() {
-        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-        const badges = document.querySelectorAll(".cart-badge");
-        badges.forEach((b) => {
-          b.textContent = cart.length;
-          b.classList.remove("hidden");
-          if (cart.length === 0) b.classList.add("hidden");
-        });
+      async function updateCartCount() {
+        const userStr = localStorage.getItem("user");
+        const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo_User" };
+
+        try {
+          const res = await fetch(`/api/agency/cart?agencyId=${user.id}`);
+          const data = await res.json();
+          const count = data.cart ? data.cart.length : 0;
+
+          const badges = document.querySelectorAll(".cart-badge");
+          badges.forEach((b) => {
+            b.textContent = count;
+            if (count === 0) {
+              b.classList.add("hidden");
+            } else {
+              b.classList.remove("hidden");
+            }
+          });
+        } catch (e) {
+          console.error("Error updating cart count:", e);
+        }
       }
 
       // Init count on load

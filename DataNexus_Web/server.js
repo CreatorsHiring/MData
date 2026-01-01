@@ -3,6 +3,7 @@ const express = require("express");
 const path = require("path");
 const { CosmosClient } = require("@azure/cosmos");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,17 @@ app.use(express.json());
 app.use("/Agency", express.static(path.join(__dirname, "Agency")));
 app.use("/User", express.static(path.join(__dirname, "User")));
 app.use(express.static(__dirname));
+
+// Clean URL routes for legal pages
+app.get("/terms", (req, res) =>
+  res.sendFile(path.join(__dirname, "terms.html"))
+);
+app.get("/privacy", (req, res) =>
+  res.sendFile(path.join(__dirname, "privacy.html"))
+);
+app.get("/refund", (req, res) =>
+  res.sendFile(path.join(__dirname, "refund.html"))
+);
 
 // Azure Cosmos DB Configuration
 const endpoint = process.env.COSMOS_ENDPOINT;
@@ -686,6 +698,365 @@ app.post("/api/signup", async (req, res) => {
   } catch (err) {
     console.error("Signup error:", err);
     res.status(500).json({ success: false, error: "Internal server error" });
+  }
+});
+
+// ========== AGENCY CART APIs (Cloud Storage) ==========
+
+// GET agency cart
+app.get("/api/agency/cart", async (req, res) => {
+  try {
+    const agencyId = req.query.agencyId;
+    if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
+
+    const { resource: agency } = await agenciesContainer
+      .item(agencyId, agencyId)
+      .read();
+
+    if (!agency) {
+      return res.json({ cart: [] });
+    }
+
+    res.json({ cart: agency.cart || [] });
+  } catch (err) {
+    if (err.code === 404) {
+      return res.json({ cart: [] });
+    }
+    console.error("Get Cart Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ADD item to agency cart
+app.post("/api/agency/cart", async (req, res) => {
+  try {
+    const { agencyId, item } = req.body;
+    if (!agencyId || !item)
+      return res.status(400).json({ error: "Missing agencyId or item" });
+
+    // Get current agency
+    let agency;
+    try {
+      const { resource } = await agenciesContainer
+        .item(agencyId, agencyId)
+        .read();
+      agency = resource;
+    } catch (e) {
+      if (e.code === 404) {
+        return res.status(404).json({ error: "Agency not found" });
+      }
+      throw e;
+    }
+
+    // Initialize cart if not exists
+    if (!agency.cart) agency.cart = [];
+
+    // Check for duplicates
+    const existing = agency.cart.find((c) => c.category === item.category);
+    if (existing) {
+      return res
+        .status(409)
+        .json({ error: `${item.category} Bundle is already in your cart.` });
+    }
+
+    // Add item
+    agency.cart.push({
+      id: crypto.randomUUID(),
+      ...item,
+      addedAt: new Date().toISOString(),
+    });
+
+    await agenciesContainer.items.upsert(agency);
+    res.json({ success: true, cart: agency.cart });
+  } catch (err) {
+    console.error("Add to Cart Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// REMOVE item from agency cart
+app.delete("/api/agency/cart/:itemId", async (req, res) => {
+  try {
+    const agencyId = req.query.agencyId;
+    const itemId = req.params.itemId;
+    if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
+
+    const { resource: agency } = await agenciesContainer
+      .item(agencyId, agencyId)
+      .read();
+
+    if (!agency || !agency.cart) {
+      return res.json({ success: true, cart: [] });
+    }
+
+    agency.cart = agency.cart.filter(
+      (c) => c.id !== itemId && c.category !== itemId
+    );
+    await agenciesContainer.items.upsert(agency);
+
+    res.json({ success: true, cart: agency.cart });
+  } catch (err) {
+    console.error("Remove from Cart Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// CLEAR agency cart
+app.delete("/api/agency/cart", async (req, res) => {
+  try {
+    const agencyId = req.query.agencyId;
+    if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
+
+    const { resource: agency } = await agenciesContainer
+      .item(agencyId, agencyId)
+      .read();
+
+    if (agency) {
+      agency.cart = [];
+      await agenciesContainer.items.upsert(agency);
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Clear Cart Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== AGENCY PROFILE APIs ==========
+
+// GET agency profile
+app.get("/api/agency/profile", async (req, res) => {
+  try {
+    const agencyId = req.query.agencyId;
+    if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
+
+    const { resource: agency } = await agenciesContainer
+      .item(agencyId, agencyId)
+      .read();
+
+    if (!agency) {
+      return res.status(404).json({ error: "Agency not found" });
+    }
+
+    res.json({
+      id: agency.id,
+      name: agency.name,
+      email: agency.email,
+      phone: agency.phone || "",
+      website: agency.website || "",
+      description: agency.description || "",
+      avatar: agency.avatar || null,
+      joined_date: agency.joined_date,
+    });
+  } catch (err) {
+    console.error("Get Profile Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// UPDATE agency profile
+app.put("/api/agency/profile", async (req, res) => {
+  try {
+    const { agencyId, name, phone, website, description, avatar } = req.body;
+    if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
+
+    const { resource: agency } = await agenciesContainer
+      .item(agencyId, agencyId)
+      .read();
+
+    if (!agency) {
+      return res.status(404).json({ error: "Agency not found" });
+    }
+
+    // Update fields
+    if (name !== undefined) agency.name = name;
+    if (phone !== undefined) agency.phone = phone;
+    if (website !== undefined) agency.website = website;
+    if (description !== undefined) agency.description = description;
+    if (avatar !== undefined) agency.avatar = avatar;
+
+    await agenciesContainer.items.upsert(agency);
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      profile: {
+        id: agency.id,
+        name: agency.name,
+        email: agency.email,
+        phone: agency.phone,
+        website: agency.website,
+        description: agency.description,
+        avatar: agency.avatar,
+      },
+    });
+  } catch (err) {
+    console.error("Update Profile Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ===========================================
+// In-House OTP System with Nodemailer
+// ===========================================
+
+// In-memory OTP storage (for production, use Redis or database)
+const otpStore = new Map();
+
+// Email transporter configuration
+// Uses Gmail by default - requires SMTP_USER and SMTP_PASS in .env
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS, // Gmail App Password (not regular password)
+  },
+});
+
+// Generate 6-digit OTP
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// OTP Email HTML Template
+function getOTPEmailTemplate(otp) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f172a; padding: 40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="100%" max-width="500" cellpadding="0" cellspacing="0" style="max-width: 500px;">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 16px 16px 0 0; padding: 30px; text-align: center;">
+                  <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">MData</h1>
+                  <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">Verify Your Email Address</p>
+                </td>
+              </tr>
+              <!-- Body -->
+              <tr>
+                <td style="background-color: #1e293b; padding: 40px 30px; text-align: center;">
+                  <p style="color: #94a3b8; margin: 0 0 20px 0; font-size: 16px;">Your One-Time Password (OTP) is:</p>
+                  <div style="background-color: #0f172a; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                    <span style="color: #3b82f6; font-size: 36px; font-weight: bold; letter-spacing: 8px;">${otp}</span>
+                  </div>
+                  <p style="color: #64748b; margin: 20px 0 0 0; font-size: 14px;">This code expires in <strong style="color: #f59e0b;">10 minutes</strong></p>
+                  <p style="color: #475569; margin: 20px 0 0 0; font-size: 13px;">If you didn't request this code, please ignore this email.</p>
+                </td>
+              </tr>
+              <!-- Footer -->
+              <tr>
+                <td style="background-color: #0f172a; border-radius: 0 0 16px 16px; padding: 20px; text-align: center; border-top: 1px solid #334155;">
+                  <p style="color: #475569; margin: 0; font-size: 12px;">© 2024 MData. All rights reserved.</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+}
+
+// Generate and send OTP
+app.post("/api/otp/generate", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    // Check if SMTP is configured
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error("SMTP credentials not configured");
+      return res.status(500).json({
+        error: "Email service not configured",
+        message: "Please configure SMTP_USER and SMTP_PASS in .env",
+      });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    // Store OTP
+    otpStore.set(email.toLowerCase(), { otp, expiresAt });
+
+    // Send email
+    const mailOptions = {
+      from: `"MData" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Verify Your Email - MData",
+      html: getOTPEmailTemplate(otp),
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    console.log(`OTP sent to ${email}`);
+    res.json({ success: true, message: "OTP sent successfully" });
+  } catch (err) {
+    console.error("OTP Generate Error:", err);
+    res.status(500).json({
+      error: "Failed to send OTP",
+      message: err.message,
+    });
+  }
+});
+
+// Verify OTP
+app.post("/api/otp/verify", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ error: "Email and OTP are required" });
+    }
+
+    const stored = otpStore.get(email.toLowerCase());
+
+    if (!stored) {
+      return res.status(400).json({
+        error: "OTP not found",
+        message:
+          "No OTP was generated for this email. Please request a new one.",
+      });
+    }
+
+    if (Date.now() > stored.expiresAt) {
+      otpStore.delete(email.toLowerCase());
+      return res.status(400).json({
+        error: "OTP expired",
+        message: "This OTP has expired. Please request a new one.",
+      });
+    }
+
+    if (stored.otp !== otp) {
+      return res.status(400).json({
+        error: "Invalid OTP",
+        message: "The OTP you entered is incorrect. Please try again.",
+      });
+    }
+
+    // OTP verified successfully - remove it
+    otpStore.delete(email.toLowerCase());
+    console.log(`OTP verified for ${email}`);
+
+    res.json({ success: true, message: "OTP verified successfully" });
+  } catch (err) {
+    console.error("OTP Verify Error:", err);
+    res.status(500).json({
+      error: "Failed to verify OTP",
+      message: err.message,
+    });
   }
 });
 

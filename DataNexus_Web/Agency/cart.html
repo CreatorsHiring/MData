@@ -166,26 +166,7 @@
       id="sidebar"
       class="fixed inset-y-0 left-0 z-50 flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-transform duration-300 -translate-x-full"
     >
-        <div class="p-6 pb-8">
-          <div class="flex items-center gap-3">
-            <div
-              class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20"
-            >
-              <span class="material-symbols-outlined text-[24px]"
-                >smart_toy</span
-              >
-            </div>
-            <div class="flex flex-col">
-              <span
-                class="font-bold text-lg tracking-tight text-white leading-none"
-                >MData</span
-              >
-              <span class="text-xs text-slate-400 font-medium mt-1"
-                >Agency Portal</span
-              >
-            </div>
-          </div>
-        </div>
+
         <nav class="flex-1 px-4 sidebar-scroll overflow-y-auto space-y-1.5 py-2">
           <a
             class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
@@ -249,16 +230,7 @@
               >
               Profile
             </a>
-            <a
-              class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
-              href="settings.html"
-            >
-              <span
-                class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
-                >settings</span
-              >
-              Settings
-            </a>
+
           </div>
         </nav>
         <div class="p-4 mt-auto border-t border-white/5">
@@ -282,45 +254,22 @@
           <button class="sidebar-toggle text-slate-400 hover:text-white p-2 -ml-2 transition-colors">
             <span class="material-symbols-outlined">menu</span>
           </button>
-          <div class="hidden sm:flex flex-col text-left">
-            <span class="text-[10px] text-slate-400 uppercase tracking-wider"
-              >Agency</span
-            >
-            <h1 class="text-sm font-bold text-white uppercase tracking-tight">
-              Cart
-            </h1>
+          <div class="flex items-center gap-3">
+            <img src="../MData.png" alt="MData" class="h-8 w-8" />
+            <span class="text-lg font-bold text-white">MData</span>
           </div>
         </div>
 
         <div class="flex items-center gap-4 ml-auto">
-          <button
-            class="relative p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-colors"
-          >
-            <span class="material-symbols-outlined text-[22px]"
-              >notifications</span
-            >
-            <span
-              class="absolute top-2 right-2.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-slate-900 animate-pulse"
-            ></span>
-          </button>
-          <div class="h-6 w-px bg-white/10 mx-1"></div>
-          <div class="flex items-center gap-3 pl-1 cursor-pointer group">
+          <a href="profile.html" class="flex items-center gap-3 cursor-pointer group">
             <div class="text-right hidden sm:block">
-              <p
-                class="text-sm font-semibold text-white group-hover:text-primary transition-colors leading-none"
-              >
-                Alex Morgan
-              </p>
-              <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">
-                Pro Member
-              </p>
+              <p id="header-name" class="text-sm font-semibold text-white group-hover:text-primary transition-colors leading-none">Agency User</p>
+              <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">Agency</p>
             </div>
-            <div
-              class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center"
-            >
+            <div class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
               <span class="material-symbols-outlined text-white text-[18px]">person</span>
             </div>
-          </div>
+          </a>
         </div>
       </header>
         <div class="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-8">
@@ -400,16 +349,7 @@
                       </div>
                       <span
                         class="font-medium text-slate-900 dark:text-slate-200"
-                        >$150.00</span
-                      >
-                    </div>
-                    <div
-                      class="flex justify-between text-slate-600 dark:text-slate-400"
-                    >
-                      <span>Estimated Tax</span>
-                      <span
-                        class="font-medium text-slate-900 dark:text-slate-200"
-                        >$0.00</span
+                        >₹25.00</span
                       >
                     </div>
                     <div class="pt-2">
@@ -581,8 +521,9 @@
       }
 
       document.getElementById('confirm-btn').onclick = () => {
+        const callback = confirmCallback;
         closeConfirmModal();
-        if (confirmCallback) confirmCallback();
+        if (callback) callback();
       };
 
       function showResultModal(type, title, message, buttonText = 'Continue', onClose = null) {
@@ -664,13 +605,51 @@
       );
       overlay.addEventListener("click", toggleSidebar);
 
-      // --- Cart Logic ---
-      document.addEventListener("DOMContentLoaded", () => {
-          renderCart();
+      // Hover to reveal sidebar from edge
+      let hoverTimeout;
+      document.addEventListener("mousemove", (e) => {
+        if (e.clientX < 20) {
+          clearTimeout(hoverTimeout);
+          hoverTimeout = setTimeout(() => {
+            if (sidebar.classList.contains("-translate-x-full")) {
+              sidebar.classList.remove("-translate-x-full");
+              overlay.classList.remove("hidden");
+            }
+          }, 200);
+        }
       });
 
+      // --- Cart Logic ---
+      let cartItems = [];
+      const PROCESSING_FEE = 25;
+      
+      document.addEventListener("DOMContentLoaded", () => {
+          // Update header name
+          const userStr = localStorage.getItem("user");
+          const user = userStr ? JSON.parse(userStr) : { name: "Agency User" };
+          const headerName = document.getElementById("header-name");
+          if (headerName) headerName.textContent = user.name || "Agency User";
+          
+          loadCart();
+      });
+
+      async function loadCart() {
+          const userStr = localStorage.getItem("user");
+          const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo_User" };
+
+          try {
+              const res = await fetch(`/api/agency/cart?agencyId=${user.id}`);
+              const data = await res.json();
+              cartItems = data.cart || [];
+              renderCart();
+          } catch (e) {
+              console.error('Error loading cart:', e);
+              cartItems = [];
+              renderCart();
+          }
+      }
+
       function renderCart() {
-          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
           const container = document.getElementById('cart-items-container');
           const totalEl = document.getElementById('cart-total');
           const subtotalEl = document.getElementById('cart-subtotal');
@@ -678,14 +657,14 @@
           const badges = document.querySelectorAll('.cart-badge');
 
           badges.forEach(b => {
-             b.textContent = cart.length;
+             b.textContent = cartItems.length;
              b.classList.remove('hidden');
-             if(cart.length === 0) b.classList.add('hidden');
+             if(cartItems.length === 0) b.classList.add('hidden');
           });
 
-          if(countEl) countEl.textContent = `${cart.length} Items Selected`;
+          if(countEl) countEl.textContent = `${cartItems.length} Items Selected`;
 
-          if(cart.length === 0) {
+          if(cartItems.length === 0) {
               container.innerHTML = `<div class="text-center py-20 text-slate-500">Your cart is empty. <a href="browse_datasets.html" class="text-primary hover:underline">Browse Datasets</a></div>`;
               if(totalEl) totalEl.textContent = "$0.00";
               if(subtotalEl) subtotalEl.textContent = "$0.00";
@@ -695,8 +674,8 @@
           container.innerHTML = '';
           let subtotal = 0;
 
-          cart.forEach((item, index) => {
-              subtotal += item.price;
+          cartItems.forEach((item, index) => {
+              subtotal += item.price || 0;
               const card = `
                 <div class="glass-card rounded-2xl p-5 group hover:shadow-md hover:border-primary/30 transition-all duration-300 relative overflow-hidden">
                   <div class="flex flex-col sm:flex-row gap-5">
@@ -711,12 +690,12 @@
                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">${item.files} verified files. Quality: ${item.quality}</p>
                             </div>
                             <div class="text-right shrink-0">
-                               <p class="text-lg font-bold text-slate-900 dark:text-white">$${item.price.toLocaleString()}</p>
+                               <p class="text-lg font-bold text-slate-900 dark:text-white">₹${(item.price || 0).toLocaleString()}</p>
                             </div>
                          </div>
                       </div>
                       <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
-                         <button onclick="removeFromCart(${index})" class="text-sm font-medium text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1">
+                         <button onclick="removeFromCart('${item.id || item.category}')" class="text-sm font-medium text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1">
                             <span class="material-symbols-outlined text-[18px]">delete</span> Remove
                          </button>
                       </div>
@@ -727,53 +706,70 @@
               container.insertAdjacentHTML('beforeend', card);
           });
 
-          if(subtotalEl) subtotalEl.textContent = `$${subtotal.toLocaleString()}`;
-          // Add processing fee
-          const total = subtotal + 150; 
-          if(totalEl) totalEl.textContent = `$${total.toLocaleString()}`;
+          if(subtotalEl) subtotalEl.textContent = `₹${subtotal.toLocaleString()}`;
+          const total = subtotal + PROCESSING_FEE;
+          if(totalEl) totalEl.textContent = `₹${total.toLocaleString()}`;
       }
 
-      function removeFromCart(index) {
-          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-          cart.splice(index, 1);
-          localStorage.setItem('cart', JSON.stringify(cart));
-          renderCart();
+      async function removeFromCart(itemId) {
+          const userStr = localStorage.getItem("user");
+          const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo_User" };
+
+          try {
+              const res = await fetch(`/api/agency/cart/${encodeURIComponent(itemId)}?agencyId=${user.id}`, {
+                  method: 'DELETE'
+              });
+              
+              if (res.ok) {
+                  const data = await res.json();
+                  cartItems = data.cart || [];
+                  renderCart();
+                  showToast('Item removed from cart', 'success');
+              } else {
+                  showToast('Failed to remove item', 'error');
+              }
+          } catch (e) {
+              console.error(e);
+              showToast('Error removing item', 'error');
+          }
       }
 
       async function checkout() {
-          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-          if(cart.length === 0) {
+          if(cartItems.length === 0) {
             showToast("Your cart is empty!", "error");
             return;
           }
           
+          // Feature coming soon - payment gateway integration pending
+          showToast("Feature Coming Soon! Payment gateway integration is in progress.", "info");
+          return;
+          
           const userStr = localStorage.getItem("user");
           const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo", role: "agency" };
 
-          // Calculate total for display
-          const subtotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
-          const total = subtotal + 150; // Processing fee
+          const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0), 0);
+          const total = subtotal + PROCESSING_FEE;
 
-          // Show confirm modal
           showConfirmModal(
             'Confirm Checkout',
-            `You are about to purchase ${cart.length} bundle(s) for $${total.toLocaleString()}. Proceed?`,
+            `You are about to purchase ${cartItems.length} bundle(s) for ₹${total.toLocaleString()}. Proceed?`,
             async () => {
-              // User confirmed, proceed with checkout
               try {
                 const res = await fetch('/api/market/checkout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                        agencyId: user.id,
-                       items: cart.map(c => ({ category: c.category })) 
+                       items: cartItems.map(c => ({ category: c.category })) 
                     })
                 });
 
                 const data = await res.json();
                 
                 if(res.ok) {
-                    localStorage.removeItem('cart');
+                    // Clear cloud cart
+                    await fetch(`/api/agency/cart?agencyId=${user.id}`, { method: 'DELETE' });
+                    cartItems = [];
                     renderCart();
                     showResultModal(
                       'success',

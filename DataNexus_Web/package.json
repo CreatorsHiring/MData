@@ -1,11 +1,14 @@
 {
-  "name": "datanexus_web",
+  "name": "mdata-web",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "MData - AI Training Data Marketplace",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +19,7 @@
     "@azure/storage-blob": "^12.29.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "nodemailer": "^7.0.12"
   }
 }

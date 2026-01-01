@@ -345,7 +345,7 @@
                   id="wallet-balance"
                   class="text-4xl md:text-5xl font-bold tracking-tight text-white drop-shadow-sm"
                 >
-                  $0.00
+                  ₹0.00
                 </h1>
               </div>
               <div
@@ -359,7 +359,7 @@
                   <span
                     id="wallet-pending"
                     class="text-xl font-medium text-white/90"
-                    >$0.00</span
+                    >₹0.00</span
                   >
                 </div>
                 <div class="flex flex-col gap-1 border-l border-white/10 pl-6">
@@ -370,7 +370,7 @@
                   <span
                     id="wallet-lifetime"
                     class="text-xl font-medium text-white/90"
-                    >$0.00</span
+                    >₹0.00</span
                   >
                 </div>
               </div>
@@ -522,7 +522,7 @@
 
           balanceEl.textContent = stats.earnings;
           lifetimeEl.textContent = stats.earnings;
-          pendingEl.textContent = "$0.00";
+          pendingEl.textContent = "₹0.00";
 
           // Transactions
           txList.innerHTML = "";
@@ -628,7 +628,7 @@
                       color: "rgba(255, 255, 255, 0.05)",
                       drawBorder: false,
                     },
-                    ticks: { color: "#94a3b8", callback: (val) => "$" + val },
+                    ticks: { color: "#94a3b8", callback: (val) => "₹" + val },
                   },
                 },
                 interaction: {

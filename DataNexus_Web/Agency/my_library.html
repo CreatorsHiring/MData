@@ -15,7 +15,7 @@
       rel="stylesheet"
     />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
+    <script>
       tailwind.config = {
         darkMode: "class",
         theme: {
@@ -75,13 +75,6 @@
         border: 1px solid rgba(255, 255, 255, 0.05);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
           0 2px 4px -1px rgba(0, 0, 0, 0.1);
-      }
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
       }
       body {
         background-image: radial-gradient(
@@ -149,11 +142,6 @@
         background: rgba(255, 255, 255, 0.2);
       }
     </style>
-    <style>
-      body {
-        min-height: max(884px, 100dvh);
-      }
-    </style>
   </head>
   <body
     class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary"
@@ -162,29 +150,13 @@
       id="sidebar-overlay"
       class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden transition-opacity duration-300"
     ></div>
+
+    <!-- Sidebar -->
     <aside
       id="sidebar"
       class="fixed inset-y-0 left-0 z-50 flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-transform duration-300 -translate-x-full"
     >
-      <div class="p-6 pb-8">
-        <div class="flex items-center gap-3">
-          <div
-            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20"
-          >
-            <span class="material-symbols-outlined text-[24px]">smart_toy</span>
-          </div>
-          <div class="flex flex-col">
-            <span
-              class="font-bold text-lg tracking-tight text-white leading-none"
-              >MData</span
-            >
-            <span class="text-xs text-slate-400 font-medium mt-1"
-              >Agency Portal</span
-            >
-          </div>
-        </div>
-      </div>
-      <nav class="flex-1 px-4 sidebar-scroll overflow-y-auto space-y-1.5 py-2">
+      <nav class="flex-1 px-4 overflow-y-auto space-y-1.5 py-6">
         <a
           class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
           href="dashboard.html"
@@ -227,8 +199,9 @@
           >
           Cart
           <span
-            class="ml-auto bg-blue-500/20 text-blue-400 text-xs py-0.5 px-2 rounded-full border border-blue-500/20"
-            >2</span
+            id="cart-badge"
+            class="ml-auto bg-blue-500/20 text-blue-400 text-xs py-0.5 px-2 rounded-full border border-blue-500/20 hidden"
+            >0</span
           >
         </a>
         <div class="pt-4 mt-4 border-t border-white/5">
@@ -247,16 +220,6 @@
             >
             Profile
           </a>
-          <a
-            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
-            href="settings.html"
-          >
-            <span
-              class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
-              >settings</span
-            >
-            Settings
-          </a>
         </div>
       </nav>
       <div class="p-4 mt-auto border-t border-white/5">
@@ -271,84 +234,64 @@
         </a>
       </div>
     </aside>
+
+    <!-- Main Content -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+      <!-- Header -->
       <header
-        class="h-16 glass sticky top-0 z-40 px-6 flex items-center justify-between shrink-0 border-b border-white/5"
+        class="h-16 glass border-b border-white/5 flex items-center justify-between px-6 sticky top-0 z-40"
       >
         <div class="flex items-center gap-4">
-          <button class="sidebar-toggle text-white p-2 -ml-2">
+          <button class="sidebar-toggle text-slate-400 hover:text-white p-2">
             <span class="material-symbols-outlined">menu</span>
           </button>
-          <div class="hidden sm:flex flex-col text-left">
-            <span class="text-[10px] text-slate-400 uppercase tracking-wider"
-              >Agency</span
-            >
-            <h1 class="text-sm font-bold text-white uppercase tracking-tight">
-              My Library
-            </h1>
+          <div class="flex items-center gap-3">
+            <img src="../MData.png" alt="MData" class="h-8 w-8" />
+            <span class="text-lg font-bold text-white">MData</span>
           </div>
         </div>
-
-        <div class="flex items-center gap-4 ml-auto">
-          <button
-            class="relative p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-colors"
+        <a
+          href="profile.html"
+          class="flex items-center gap-3 cursor-pointer group"
+        >
+          <div class="text-right hidden sm:block">
+            <p
+              id="header-name"
+              class="text-sm font-semibold text-white group-hover:text-primary transition-colors leading-none"
+            >
+              Agency User
+            </p>
+            <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">
+              Agency
+            </p>
+          </div>
+          <div
+            class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center"
           >
-            <span class="material-symbols-outlined text-[22px]"
-              >notifications</span
+            <span class="material-symbols-outlined text-white text-[18px]"
+              >person</span
             >
-            <span
-              class="absolute top-2 right-2.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-slate-900 animate-pulse"
-            ></span>
-          </button>
-          <div class="h-6 w-px bg-white/10 mx-1"></div>
-          <div class="flex items-center gap-3 pl-1 cursor-pointer group">
-            <div class="text-right hidden sm:block">
-              <p
-                class="text-sm font-semibold text-white group-hover:text-primary transition-colors leading-none"
-              >
-                Alex Morgan
-              </p>
-              <p
-                class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider"
-              >
-                Pro Member
-              </p>
-            </div>
-            <div
-              class="h-9 w-9 rounded-full ring-2 ring-white/10 overflow-hidden group-hover:ring-primary/50 transition-all bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center"
-            >
-              <span class="material-symbols-outlined text-white text-[18px]">person</span>
-            </div>
           </div>
-        </div>
+        </a>
       </header>
+
+      <!-- Page Content -->
       <div class="flex-1 overflow-y-auto p-8 scroll-smooth">
         <div class="max-w-7xl mx-auto space-y-8">
+          <!-- Page Header -->
           <div
             class="flex flex-col md:flex-row md:items-end justify-between gap-4 animate-fade-in"
           >
             <div>
-              <h1 class="text-3xl font-bold text-white mb-2 text-glow">
-                My Library
-              </h1>
+              <h1 class="text-3xl font-bold text-white mb-2">My Library</h1>
               <p class="text-slate-400">
-                Manage and access your purchased datasets and AI models.
+                Manage and access your purchased datasets.
               </p>
             </div>
-            <div class="flex items-center gap-3">
-              <span class="text-sm text-slate-400">Sort by:</span>
-              <select
-                class="bg-slate-800/50 border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary p-2.5"
-              >
-                <option>Recently Added</option>
-                <option>Name (A-Z)</option>
-                <option>Size (Large to Small)</option>
-              </select>
-            </div>
           </div>
-          <div
-            class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in delay-100"
-          >
+
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
             <div
               class="glass-card p-6 rounded-2xl relative overflow-hidden group"
             >
@@ -364,12 +307,14 @@
                     >dataset</span
                   >
                 </div>
-                <p class="text-3xl font-bold text-white">24</p>
-                <p class="text-xs text-green-400 mt-2 flex items-center gap-1">
-                  <span class="material-symbols-outlined text-sm"
-                    >trending_up</span
-                  >
-                  +2 this month
+                <p
+                  id="stat-total-datasets"
+                  class="text-3xl font-bold text-white"
+                >
+                  0
+                </p>
+                <p class="text-xs text-slate-400 mt-2">
+                  Your purchased datasets
                 </p>
               </div>
             </div>
@@ -382,387 +327,59 @@
               <div class="relative z-10">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-slate-400 text-sm font-medium">
-                    Storage Used
+                    Total Spent
                   </h3>
                   <span class="material-symbols-outlined text-purple-400"
-                    >cloud_done</span
+                    >payments</span
                   >
                 </div>
-                <p class="text-3xl font-bold text-white">1.2 TB</p>
-                <p class="text-xs text-slate-500 mt-2">of 5 TB Plan</p>
+                <p id="stat-total-spent" class="text-3xl font-bold text-white">
+                  $0
+                </p>
+                <p class="text-xs text-slate-400 mt-2">Total invested</p>
               </div>
             </div>
             <div
               class="glass-card p-6 rounded-2xl relative overflow-hidden group"
             >
               <div
-                class="absolute -right-6 -top-6 w-24 h-24 bg-orange-500/20 rounded-full blur-2xl group-hover:bg-orange-500/30 transition-colors"
+                class="absolute -right-6 -top-6 w-24 h-24 bg-green-500/20 rounded-full blur-2xl group-hover:bg-green-500/30 transition-colors"
               ></div>
               <div class="relative z-10">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-slate-400 text-sm font-medium">
-                    Updates Available
+                    Avg Quality
                   </h3>
-                  <span class="material-symbols-outlined text-orange-400"
-                    >update</span
+                  <span class="material-symbols-outlined text-green-400"
+                    >verified</span
                   >
                 </div>
-                <p class="text-3xl font-bold text-white">3</p>
-                <p
-                  class="text-xs text-orange-400 mt-2 hover:underline cursor-pointer"
-                >
-                  View updates
+                <p id="stat-avg-quality" class="text-3xl font-bold text-white">
+                  0%
                 </p>
+                <p class="text-xs text-slate-400 mt-2">Average quality score</p>
               </div>
             </div>
           </div>
-          <div id="library-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-fade-in delay-200">
-            <!-- Dynamic Content -->
-            <div class="col-span-full text-center py-20 text-slate-500">
-                <p>Loading library...</p>
-            </div>
-          </div>
-              <div
-                class="w-full sm:w-48 h-32 sm:h-auto bg-gradient-to-br from-indigo-900 to-slate-800 rounded-xl flex items-center justify-center shrink-0 border border-white/5 relative overflow-hidden"
-              >
-                <div
-                  class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"
-                ></div>
-                <span
-                  class="material-symbols-outlined text-5xl text-indigo-400/80 group-hover:scale-110 transition-transform duration-300"
-                  >view_in_ar</span
-                >
-                <span
-                  class="absolute top-2 right-2 bg-green-500/20 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded border border-green-500/20"
-                  >V2.1</span
-                >
-              </div>
-              <div class="flex-1 flex flex-col justify-between">
-                <div>
-                  <div class="flex justify-between items-start mb-2">
-                    <h3
-                      class="text-xl font-bold text-white group-hover:text-primary transition-colors cursor-pointer"
-                    >
-                      Autonomous Vehicle LiDAR Data
-                    </h3>
-                    <div class="dropdown relative group/menu">
-                      <button
-                        class="text-slate-500 hover:text-white transition-colors"
-                      >
-                        <span class="material-symbols-outlined">more_vert</span>
-                      </button>
-                    </div>
-                  </div>
-                  <p class="text-slate-400 text-sm mb-3 line-clamp-2">
-                    High-resolution 3D point cloud data collected from urban
-                    environments for autonomous driving model training.
-                  </p>
-                  <div class="flex flex-wrap gap-2 mb-4">
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >Computer Vision</span
-                    >
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >350 GB</span
-                    >
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >PCD Format</span
-                    >
-                  </div>
-                </div>
-                <div
-                  class="flex items-center gap-3 pt-4 border-t border-white/5"
-                >
-                  <button
-                    class="flex-1 bg-primary hover:bg-primary-hover text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
-                  >
-                    <span class="material-symbols-outlined text-lg"
-                      >download</span
-                    >
-                    Download
-                  </button>
-                  <button
-                    class="bg-white/5 hover:bg-white/10 text-white p-2 rounded-lg transition-colors border border-white/10"
-                    title="View Details"
-                  >
-                    <span class="material-symbols-outlined">visibility</span>
-                  </button>
-                  <button
-                    class="bg-white/5 hover:bg-white/10 text-white p-2 rounded-lg transition-colors border border-white/10"
-                    title="Get Support"
-                  >
-                    <span class="material-symbols-outlined">support_agent</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div
-              class="glass-card p-6 rounded-2xl flex flex-col sm:flex-row gap-6 hover:shadow-lg hover:shadow-blue-500/5 transition-all group"
-            >
-              <div
-                class="w-full sm:w-48 h-32 sm:h-auto bg-gradient-to-br from-emerald-900 to-slate-800 rounded-xl flex items-center justify-center shrink-0 border border-white/5 relative overflow-hidden"
-              >
-                <div
-                  class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"
-                ></div>
-                <span
-                  class="material-symbols-outlined text-5xl text-emerald-400/80 group-hover:scale-110 transition-transform duration-300"
-                  >finance_chip</span
-                >
-              </div>
-              <div class="flex-1 flex flex-col justify-between">
-                <div>
-                  <div class="flex justify-between items-start mb-2">
-                    <h3
-                      class="text-xl font-bold text-white group-hover:text-primary transition-colors cursor-pointer"
-                    >
-                      Global Financial NLP Corpus
-                    </h3>
-                    <button
-                      class="text-slate-500 hover:text-white transition-colors"
-                    >
-                      <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                  </div>
-                  <p class="text-slate-400 text-sm mb-3 line-clamp-2">
-                    Aggregated financial news, reports, and earnings call
-                    transcripts spanning 20 years for sentiment analysis.
-                  </p>
-                  <div class="flex flex-wrap gap-2 mb-4">
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >NLP</span
-                    >
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >45 GB</span
-                    >
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >JSON/CSV</span
-                    >
-                  </div>
-                </div>
-                <div
-                  class="flex items-center gap-3 pt-4 border-t border-white/5"
-                >
-                  <button
-                    class="flex-1 bg-primary hover:bg-primary-hover text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
-                  >
-                    <span class="material-symbols-outlined text-lg"
-                      >download</span
-                    >
-                    Download
-                  </button>
-                  <button
-                    class="bg-white/5 hover:bg-white/10 text-white p-2 rounded-lg transition-colors border border-white/10"
-                    title="View Details"
-                  >
-                    <span class="material-symbols-outlined">visibility</span>
-                  </button>
-                  <button
-                    class="bg-white/5 hover:bg-white/10 text-white p-2 rounded-lg transition-colors border border-white/10"
-                    title="Get Support"
-                  >
-                    <span class="material-symbols-outlined">support_agent</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div
-              class="glass-card p-6 rounded-2xl flex flex-col sm:flex-row gap-6 hover:shadow-lg hover:shadow-blue-500/5 transition-all group"
-            >
-              <div
-                class="w-full sm:w-48 h-32 sm:h-auto bg-gradient-to-br from-rose-900 to-slate-800 rounded-xl flex items-center justify-center shrink-0 border border-white/5 relative overflow-hidden"
-              >
-                <div
-                  class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"
-                ></div>
-                <span
-                  class="material-symbols-outlined text-5xl text-rose-400/80 group-hover:scale-110 transition-transform duration-300"
-                  >record_voice_over</span
-                >
-              </div>
-              <div class="flex-1 flex flex-col justify-between">
-                <div>
-                  <div class="flex justify-between items-start mb-2">
-                    <h3
-                      class="text-xl font-bold text-white group-hover:text-primary transition-colors cursor-pointer"
-                    >
-                      Multilingual Speech Dataset
-                    </h3>
-                    <button
-                      class="text-slate-500 hover:text-white transition-colors"
-                    >
-                      <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                  </div>
-                  <p class="text-slate-400 text-sm mb-3 line-clamp-2">
-                    10,000 hours of labeled speech data in 15 languages,
-                    optimized for training voice recognition models.
-                  </p>
-                  <div class="flex flex-wrap gap-2 mb-4">
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >Audio</span
-                    >
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >1.5 TB</span
-                    >
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >WAV</span
-                    >
-                  </div>
-                </div>
-                <div
-                  class="flex items-center gap-3 pt-4 border-t border-white/5"
-                >
-                  <button
-                    class="flex-1 bg-primary hover:bg-primary-hover text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
-                  >
-                    <span class="material-symbols-outlined text-lg"
-                      >download</span
-                    >
-                    Download
-                  </button>
-                  <button
-                    class="bg-white/5 hover:bg-white/10 text-white p-2 rounded-lg transition-colors border border-white/10"
-                    title="View Details"
-                  >
-                    <span class="material-symbols-outlined">visibility</span>
-                  </button>
-                  <button
-                    class="bg-white/5 hover:bg-white/10 text-white p-2 rounded-lg transition-colors border border-white/10"
-                    title="Get Support"
-                  >
-                    <span class="material-symbols-outlined">support_agent</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div
-              class="glass-card p-6 rounded-2xl flex flex-col sm:flex-row gap-6 hover:shadow-lg hover:shadow-blue-500/5 transition-all group"
-            >
-              <div
-                class="w-full sm:w-48 h-32 sm:h-auto bg-gradient-to-br from-amber-900 to-slate-800 rounded-xl flex items-center justify-center shrink-0 border border-white/5 relative overflow-hidden"
-              >
-                <div
-                  class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"
-                ></div>
-                <span
-                  class="material-symbols-outlined text-5xl text-amber-400/80 group-hover:scale-110 transition-transform duration-300"
-                  >medical_services</span
-                >
-                <span
-                  class="absolute top-2 right-2 bg-yellow-500/20 text-yellow-400 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-500/20"
-                  >Beta</span
-                >
-              </div>
-              <div class="flex-1 flex flex-col justify-between">
-                <div>
-                  <div class="flex justify-between items-start mb-2">
-                    <h3
-                      class="text-xl font-bold text-white group-hover:text-primary transition-colors cursor-pointer"
-                    >
-                      Radiology X-Ray Set
-                    </h3>
-                    <button
-                      class="text-slate-500 hover:text-white transition-colors"
-                    >
-                      <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                  </div>
-                  <p class="text-slate-400 text-sm mb-3 line-clamp-2">
-                    Anonymized chest X-ray images labeled for pneumonia
-                    detection and other respiratory conditions.
-                  </p>
-                  <div class="flex flex-wrap gap-2 mb-4">
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >Healthcare</span
-                    >
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >120 GB</span
-                    >
-                    <span
-                      class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5"
-                      >DICOM</span
-                    >
-                  </div>
-                </div>
-                <div
-                  class="flex items-center gap-3 pt-4 border-t border-white/5"
-                >
-                  <button
-                    class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 cursor-not-allowed text-sm font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border border-white/5"
-                    disabled=""
-                  >
-                    <span class="material-symbols-outlined text-lg">lock</span>
-                    Restricted
-                  </button>
-                  <button
-                    class="bg-white/5 hover:bg-white/10 text-white p-2 rounded-lg transition-colors border border-white/10"
-                    title="View Details"
-                  >
-                    <span class="material-symbols-outlined">visibility</span>
-                  </button>
-                  <button
-                    class="bg-white/5 hover:bg-white/10 text-white p-2 rounded-lg transition-colors border border-white/10"
-                    title="Get Support"
-                  >
-                    <span class="material-symbols-outlined">support_agent</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+
+          <!-- Library Grid -->
           <div
-            class="flex items-center justify-between pt-8 border-t border-white/5 animate-fade-in delay-300"
+            id="library-grid"
+            class="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-fade-in"
           >
-            <p class="text-sm text-slate-400">
-              Showing <span class="text-white font-medium">1</span> to
-              <span class="text-white font-medium">4</span> of
-              <span class="text-white font-medium">24</span> results
-            </p>
-            <div class="flex gap-2">
-              <button
-                class="px-3 py-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border border-white/10 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled=""
+            <div class="col-span-full text-center py-20 text-slate-500">
+              <span class="material-symbols-outlined text-4xl mb-4"
+                >hourglass_empty</span
               >
-                Previous
-              </button>
-              <button
-                class="px-3 py-1.5 rounded-lg bg-primary text-white border border-primary text-sm shadow-lg shadow-blue-500/20"
-              >
-                1
-              </button>
-              <button
-                class="px-3 py-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border border-white/10 text-sm transition-colors"
-              >
-                2
-              </button>
-              <button
-                class="px-3 py-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border border-white/10 text-sm transition-colors"
-              >
-                3
-              </button>
-              <span class="px-2 text-slate-600">...</span>
-              <button
-                class="px-3 py-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border border-white/10 text-sm transition-colors"
-              >
-                Next
-              </button>
+              <p>Loading library...</p>
             </div>
           </div>
         </div>
       </div>
     </div>
+
     <script>
+      // Sidebar toggle
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
       const toggleButtons = document.querySelectorAll(".sidebar-toggle");
@@ -780,90 +397,207 @@
       );
       overlay.addEventListener("click", toggleSidebar);
 
-      // --- Real Data Logic ---
-      document.addEventListener("DOMContentLoaded", async () => {
-          const userStr = localStorage.getItem("user");
-          const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo_User", role: "agency" };
-
-          const grid = document.getElementById("library-grid");
-
-          try {
-              const res = await fetch(`/api/agency/purchases?agencyId=${user.id}`);
-              const purchases = await res.json();
-              
-              grid.innerHTML = "";
-              
-              if (purchases.length === 0) {
-                  grid.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500">No purchased datasets found. Go to Browse Datasets to buy some!</div>`;
-                  return;
-              }
-
-              purchases.forEach(item => {
-                  const date = new Date(item.transaction_date).toLocaleDateString();
-                  const price = item.sold_price ? `$${item.sold_price.toFixed(2)}` : 'N/A';
-                  
-                  // Mock metadata for display since we only have basic info from purchase record
-                  const size = Math.floor(Math.random() * 500) + 50 + " GB"; 
-                  const format = "ZIP/CSV"; 
-
-                  const card = `
-                    <div class="glass-card p-6 rounded-2xl flex flex-col sm:flex-row gap-6 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
-                      <div class="w-full sm:w-48 h-32 sm:h-auto bg-gradient-to-br from-indigo-900 to-slate-800 rounded-xl flex items-center justify-center shrink-0 border border-white/5 relative overflow-hidden">
-                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
-                        <span class="material-symbols-outlined text-5xl text-indigo-400/80 group-hover:scale-110 transition-transform duration-300">dataset</span>
-                      </div>
-                      <div class="flex-1 flex flex-col justify-between">
-                        <div>
-                          <div class="flex justify-between items-start mb-2">
-                            <h3 class="text-xl font-bold text-white group-hover:text-primary transition-colors cursor-pointer">${item.original_name || item.market_category + ' Dataset'}</h3>
-                          </div>
-                          <p class="text-slate-400 text-sm mb-3">
-                            Market Category: ${item.market_category}<br>
-                            Purchased on: ${date}
-                          </p>
-                          <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5">${item.quality_score || 'N/A'} AQI</span>
-                            <span class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5">${size}</span>
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-3 pt-4 border-t border-white/5">
-                          <button onclick="downloadDataset('${item.original_name}')" class="flex-1 bg-primary hover:bg-primary-hover text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
-                            <span class="material-symbols-outlined text-lg">download</span>
-                            Download
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  `;
-                  grid.insertAdjacentHTML('beforeend', card);
-              });
-
-          } catch (e) {
-              console.error(e);
-              grid.innerHTML = `<div class="col-span-full text-center text-red-400">Error loading library.</div>`;
-          }
+      // Hover to reveal sidebar
+      let hoverTimeout;
+      document.addEventListener("mousemove", (e) => {
+        if (e.clientX < 20) {
+          clearTimeout(hoverTimeout);
+          hoverTimeout = setTimeout(() => {
+            if (sidebar.classList.contains("-translate-x-full")) {
+              sidebar.classList.remove("-translate-x-full");
+              overlay.classList.remove("hidden");
+            }
+          }, 200);
+        }
       });
 
-      async function downloadDataset(filename) {
-          try {
-              // Note: This matches User Portal logic. Ensure /api/storage/sas exists or Mock it.
-              const res = await fetch(`/api/storage/sas?blobName=${encodeURIComponent(filename)}&permissions=r`);
-              const data = await res.json();
-              
-              if (res.ok && data.url) {
-                  const link = document.createElement('a');
-                  link.href = data.url;
-                  link.download = filename; // Attempt to force download
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-              } else {
-                  alert("Download failed: " + (data.error || "Could not generate link"));
-              }
-          } catch (e) {
-              console.error(e);
-              alert("Error initiating download.");
+      // Load user and cart data
+      document.addEventListener("DOMContentLoaded", async () => {
+        const userStr = localStorage.getItem("user");
+        const user = userStr
+          ? JSON.parse(userStr)
+          : { id: "Agency_Demo_User", name: "Agency User", role: "agency" };
+
+        // Update header name
+        const headerName = document.getElementById("header-name");
+        if (headerName) headerName.textContent = user.name || "Agency User";
+
+        // Load cart count
+        await updateCartCount(user.id);
+
+        // Load purchases
+        await loadLibrary(user.id);
+      });
+
+      async function updateCartCount(agencyId) {
+        try {
+          const res = await fetch(`/api/agency/cart?agencyId=${agencyId}`);
+          const data = await res.json();
+          const count = data.cart?.length || 0;
+          const badge = document.getElementById("cart-badge");
+          if (badge) {
+            badge.textContent = count;
+            badge.classList.toggle("hidden", count === 0);
           }
+        } catch (e) {
+          console.error("Error loading cart count:", e);
+        }
+      }
+
+      async function loadLibrary(agencyId) {
+        const grid = document.getElementById("library-grid");
+
+        try {
+          const res = await fetch(`/api/agency/purchases?agencyId=${agencyId}`);
+          const purchases = await res.json();
+
+          // Update stats
+          const totalDatasets = purchases.length;
+          const totalSpent = purchases.reduce(
+            (sum, p) => sum + (p.sold_price || 0),
+            0
+          );
+          const avgQuality =
+            totalDatasets > 0
+              ? (
+                  purchases.reduce(
+                    (sum, p) => sum + (parseFloat(p.quality_score) || 0),
+                    0
+                  ) / totalDatasets
+                ).toFixed(1)
+              : 0;
+
+          document.getElementById("stat-total-datasets").textContent =
+            totalDatasets;
+          document.getElementById(
+            "stat-total-spent"
+          ).textContent = `$${totalSpent.toLocaleString()}`;
+          document.getElementById(
+            "stat-avg-quality"
+          ).textContent = `${avgQuality}%`;
+
+          grid.innerHTML = "";
+
+          if (purchases.length === 0) {
+            grid.innerHTML = `
+              <div class="col-span-full text-center py-20 text-slate-500">
+                <span class="material-symbols-outlined text-5xl mb-4 opacity-50">library_books</span>
+                <p class="text-lg mb-2">No datasets in your library</p>
+                <p class="text-sm">Visit <a href="browse_datasets.html" class="text-primary hover:underline">Browse Datasets</a> to purchase some!</p>
+              </div>
+            `;
+            return;
+          }
+
+          purchases.forEach((item) => {
+            const date = new Date(item.transaction_date).toLocaleDateString();
+            const price = item.sold_price
+              ? `$${item.sold_price.toLocaleString()}`
+              : "N/A";
+            const quality = item.quality_score || "N/A";
+
+            const card = `
+              <div class="glass-card p-6 rounded-2xl flex flex-col sm:flex-row gap-6 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
+                <div class="w-full sm:w-40 h-32 sm:h-auto bg-gradient-to-br from-indigo-900 to-slate-800 rounded-xl flex items-center justify-center shrink-0 border border-white/5 relative overflow-hidden">
+                  <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+                  <span class="material-symbols-outlined text-5xl text-indigo-400/80 group-hover:scale-110 transition-transform duration-300">dataset</span>
+                </div>
+                <div class="flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 class="text-xl font-bold text-white group-hover:text-primary transition-colors mb-2">${
+                      item.original_name || item.market_category + " Dataset"
+                    }</h3>
+                    <p class="text-slate-400 text-sm mb-3">
+                      Category: ${item.market_category}<br/>
+                      Purchased: ${date}
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                      <span class="px-2 py-1 bg-white/5 rounded text-xs text-slate-300 border border-white/5">${quality}% Quality</span>
+                      <span class="px-2 py-1 bg-green-500/10 rounded text-xs text-green-300 border border-green-500/20">${price}</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 pt-4 border-t border-white/5">
+                    <button onclick="downloadDataset('${
+                      item.original_name
+                    }')" class="flex-1 bg-primary hover:bg-primary-hover text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
+                      <span class="material-symbols-outlined text-lg">download</span>
+                      Download
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+            grid.insertAdjacentHTML("beforeend", card);
+          });
+        } catch (e) {
+          console.error("Error loading library:", e);
+          grid.innerHTML = `<div class="col-span-full text-center py-20 text-red-400">Error loading library. Please try again.</div>`;
+        }
+      }
+
+      async function downloadDataset(filename) {
+        if (!filename) {
+          showToast("No filename available for download", "error");
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `/api/storage/sas?blobName=${encodeURIComponent(
+              filename
+            )}&permissions=r`
+          );
+          const data = await res.json();
+
+          if (res.ok && data.url) {
+            const link = document.createElement("a");
+            link.href = data.url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Download started!", "success");
+          } else {
+            showToast(data.error || "Download failed", "error");
+          }
+        } catch (e) {
+          console.error(e);
+          showToast("Error initiating download", "error");
+        }
+      }
+
+      function showToast(message, type = "info") {
+        const container =
+          document.getElementById("toast-container") || createToastContainer();
+        const toast = document.createElement("div");
+        const colors = {
+          success: "bg-green-600",
+          error: "bg-red-600",
+          warning: "bg-yellow-600",
+          info: "bg-blue-600",
+        };
+        toast.className = `${
+          colors[type] || colors.info
+        } text-white px-6 py-3 rounded-xl shadow-lg transform translate-y-2 opacity-0 transition-all duration-300`;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+          toast.classList.remove("translate-y-2", "opacity-0");
+        });
+
+        setTimeout(() => {
+          toast.classList.add("translate-y-2", "opacity-0");
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      function createToastContainer() {
+        const container = document.createElement("div");
+        container.id = "toast-container";
+        container.className = "fixed bottom-4 right-4 z-50 flex flex-col gap-2";
+        document.body.appendChild(container);
+        return container;
       }
     </script>
   </body>

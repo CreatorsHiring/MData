@@ -213,6 +213,19 @@ def get_upload_sas(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
          return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500)
 
+@app.route(route="pricing/seed", auth_level=func.AuthLevel.ANONYMOUS)
+def seed_prices_endpoint(req: func.HttpRequest) -> func.HttpResponse:
+    """Seeds the PriceConfig container with initial pricing data."""
+    logging.info('Seeding PriceConfig container...')
+    try:
+        success = seed_price_config()
+        if success:
+            return func.HttpResponse(json.dumps({"message": "PriceConfig seeded successfully!"}), status_code=200)
+        else:
+            return func.HttpResponse(json.dumps({"error": "Failed to seed prices"}), status_code=500)
+    except Exception as e:
+        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500)
+
 @app.route(route="market/summaries", auth_level=func.AuthLevel.ANONYMOUS)
 def get_market_summaries(req: func.HttpRequest) -> func.HttpResponse:
     try:
@@ -413,7 +426,7 @@ def get_dashboard_stats(req: func.HttpRequest) -> func.HttpResponse:
                 "name": item.get('original_name', 'Unknown'),
                 "date": item.get('upload_timestamp', '').split('T')[0],
                 "quality": score,
-                "earnings": f"${(payout * 0.8):.2f}" if is_sold else "$0.00",
+                "earnings": f"₹{(payout * 0.8):.2f}" if is_sold else "₹0.00",
                 "status": "Sold" if is_sold else "Pending"
             })
             
@@ -421,7 +434,7 @@ def get_dashboard_stats(req: func.HttpRequest) -> func.HttpResponse:
 
         return func.HttpResponse(
             json.dumps({
-                "earnings": f"${total_earnings:,.2f}",
+                "earnings": f"₹{total_earnings:,.2f}",
                 "quality": f"{avg_quality:.1f}%",
                 "total_uploads": len(items),
                 "history": submissions
@@ -699,3 +712,151 @@ def calculate_payout(quality_score):
     else:
         return 20 + (quality_score - 80) * 4.0
 
+
+def calculate_data_valuation(quality_score: int, data_type: str) -> dict:
+    """
+    Calculate data valuation based on quality score and data type.
+    Fetches base prices from Cosmos DB 'PriceConfig' container for dynamic pricing.
+    
+    Args:
+        quality_score: Integer from 1-100 representing data quality
+        data_type: String indicating the type of data (Video, Code, Image, etc.)
+    
+    Returns:
+        dict with TotalPrice (₹) and UserPayout (80% of total)
+    """
+    # Normalize quality score to 1-100 range
+    quality_score = max(1, min(100, quality_score))
+    
+    # Fetch base price from database
+    base_price = get_base_price_from_db(data_type)
+    
+    # Calculate total price: BasePrice * (QualityScore / 100)
+    total_price = base_price * (quality_score / 100)
+    
+    # User payout is 80% of total price
+    user_payout = total_price * 0.80
+    
+    # Platform commission is 20%
+    platform_commission = total_price * 0.20
+    
+    return {
+        "data_type": data_type,
+        "quality_score": quality_score,
+        "base_price": base_price,
+        "total_price": round(total_price, 2),
+        "user_payout": round(user_payout, 2),
+        "platform_commission": round(platform_commission, 2),
+        "currency": "INR",
+        "formatted_total": f"₹{total_price:,.2f}",
+        "formatted_payout": f"₹{user_payout:,.2f}"
+    }
+
+
+# --- Price Configuration Cache ---
+_price_cache = {}
+_price_cache_timestamp = None
+PRICE_CACHE_TTL_SECONDS = 300  # 5 minutes
+
+# Default prices (fallback if DB unavailable) - Market-ready rates in ₹
+DEFAULT_BASE_PRICES = {
+    "video": 375,           # ₹250-₹500 per minute (midpoint)
+    "medical_image": 200,   # ₹100-₹300 per verified case
+    "code": 100,            # ₹50-₹150 per 100 lines
+    "audio": 150,           # ₹100-₹200 per 5 minutes
+    "image": 12,            # ₹5-₹20 per high-res photo
+    "text": 50,             # ₹50 per document
+    "document": 75,         # ₹75 per PDF/doc
+    "dataset": 200,         # ₹200 per structured dataset
+    "3d_model": 300,        # ₹300 per 3D asset
+    "financial": 250,       # ₹250 per financial record
+    "other": 25             # ₹25 default
+}
+
+
+def get_base_price_from_db(data_type: str) -> float:
+    """
+    Fetches base price from Cosmos DB PriceConfig container.
+    Uses in-memory cache with 5-minute TTL to reduce DB calls.
+    
+    PriceConfig document structure:
+    {
+        "id": "video",          // lowercase data type
+        "data_type": "Video",   // display name
+        "base_price": 375,      // price in ₹
+        "unit": "per minute",   // pricing unit description
+        "updated_at": "..."     // ISO timestamp
+    }
+    """
+    global _price_cache, _price_cache_timestamp
+    
+    import time
+    current_time = time.time()
+    
+    # Check if cache is valid
+    if _price_cache_timestamp and (current_time - _price_cache_timestamp) < PRICE_CACHE_TTL_SECONDS:
+        # Use cached prices
+        normalized_type = data_type.lower().replace(" ", "_")
+        if normalized_type in _price_cache:
+            return _price_cache[normalized_type]
+    
+    # Cache expired or empty - refresh from database
+    try:
+        container = get_cosmos_container("PriceConfig")
+        
+        # Fetch all price configurations
+        query = "SELECT c.id, c.base_price FROM c"
+        items = list(container.query_items(query=query, enable_cross_partition_query=True))
+        
+        # Update cache
+        _price_cache = {}
+        for item in items:
+            price_id = item.get("id", "").lower()
+            _price_cache[price_id] = item.get("base_price", DEFAULT_BASE_PRICES.get(price_id, 25))
+        
+        _price_cache_timestamp = current_time
+        logging.info(f"Price cache refreshed with {len(_price_cache)} entries")
+        
+    except Exception as e:
+        logging.warning(f"Failed to fetch prices from DB, using defaults: {e}")
+        # Use defaults if DB fails
+        _price_cache = DEFAULT_BASE_PRICES.copy()
+        _price_cache_timestamp = current_time
+    
+    # Return price for requested data type
+    normalized_type = data_type.lower().replace(" ", "_")
+    return _price_cache.get(normalized_type, DEFAULT_BASE_PRICES.get("other", 25))
+
+
+def seed_price_config():
+    """
+    Seeds the PriceConfig container with initial pricing data.
+    Call this once to set up initial prices, then manage via Azure Portal.
+    """
+    try:
+        container = get_cosmos_container("PriceConfig")
+        
+        initial_prices = [
+            {"id": "video", "data_type": "Video", "base_price": 375, "unit": "per minute", "min_price": 250, "max_price": 500},
+            {"id": "medical_image", "data_type": "Medical Image", "base_price": 200, "unit": "per verified case", "min_price": 100, "max_price": 300},
+            {"id": "code", "data_type": "Code Snippet", "base_price": 100, "unit": "per 100 lines", "min_price": 50, "max_price": 150},
+            {"id": "audio", "data_type": "Audio", "base_price": 150, "unit": "per 5 minutes", "min_price": 100, "max_price": 200},
+            {"id": "image", "data_type": "Standard Image", "base_price": 12, "unit": "per high-res photo", "min_price": 5, "max_price": 20},
+            {"id": "text", "data_type": "Text", "base_price": 50, "unit": "per document", "min_price": 25, "max_price": 100},
+            {"id": "document", "data_type": "Document", "base_price": 75, "unit": "per PDF/doc", "min_price": 50, "max_price": 150},
+            {"id": "dataset", "data_type": "Dataset", "base_price": 200, "unit": "per structured file", "min_price": 100, "max_price": 400},
+            {"id": "3d_model", "data_type": "3D Model", "base_price": 300, "unit": "per asset", "min_price": 200, "max_price": 500},
+            {"id": "financial", "data_type": "Financial Data", "base_price": 250, "unit": "per record batch", "min_price": 150, "max_price": 400},
+            {"id": "other", "data_type": "Other", "base_price": 25, "unit": "per file", "min_price": 10, "max_price": 50},
+        ]
+        
+        for price_doc in initial_prices:
+            price_doc["updated_at"] = datetime.datetime.utcnow().isoformat()
+            container.upsert_item(price_doc)
+        
+        logging.info(f"Seeded {len(initial_prices)} price configurations")
+        return True
+        
+    except Exception as e:
+        logging.error(f"Failed to seed price config: {e}")
+        return False

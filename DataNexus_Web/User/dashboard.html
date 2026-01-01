@@ -334,7 +334,7 @@
                   id="stat-earnings"
                   class="text-white text-4xl font-bold tracking-tight"
                 >
-                  $0.00
+                  ₹0.00
                 </p>
               </div>
             </div>
@@ -675,10 +675,10 @@
           // Text Stats
           if (document.getElementById("stat-earnings"))
             document.getElementById("stat-earnings").textContent =
-              stats.earnings || "$0.00";
+              stats.earnings || "₹0.00";
           if (document.getElementById("revenue-total"))
             document.getElementById("revenue-total").textContent =
-              stats.earnings || "$0.00";
+              stats.earnings || "₹0.00";
           if (document.getElementById("stat-uploads"))
             document.getElementById("stat-uploads").innerHTML = `${
               stats.total_uploads || 0
@@ -701,7 +701,7 @@
                 file.quality_score ||
                 file.qualityScore ||
                 Math.floor(Math.random() * 30) + 70; // Default to random 70-100 if not set
-              const soldPrice = file.earnings || file.price || "$0.00";
+              const soldPrice = file.earnings || file.price || "₹0.00";
               const uploadDate =
                 file.upload_date ||
                 file.date ||

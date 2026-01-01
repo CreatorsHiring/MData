@@ -1,0 +1,46 @@
+# MData Web App - Azure Deployment
+# Deploys Node.js server to Azure App Service
+
+name: Deploy Node.js to Azure
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "DataNexus_Web/**"
+      - "!DataNexus_Web/function_app.py"
+      - "!DataNexus_Web/requirements.txt"
+      - "!DataNexus_Web/host.json"
+      - "!DataNexus_Web/**.md"
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  AZURE_WEBAPP_NAME: mdata-web
+  NODE_VERSION: "20.x"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: DataNexus_Web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --production
+        working-directory: DataNexus_Web
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: DataNexus_Web
