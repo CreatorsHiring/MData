@@ -16,12 +16,12 @@
   "type": "commonjs",
   "dependencies": {
     "@azure-rest/ai-vision-image-analysis": "^1.0.0-beta.3",
-    "@azure/cosmos": "^4.9.0",
     "@azure/openai": "^2.0.0",
     "@azure/storage-blob": "^12.29.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "firebase-admin": "^13.6.0",
     "nodemailer": "^7.0.12"
   }
 }
