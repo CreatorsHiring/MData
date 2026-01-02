@@ -1,7 +1,0 @@
-azure-functions
-azure-cosmos
-openai
-azure-ai-vision-imageanalysis
-azure-identity
-azure-storage-blob
-azure-ai-contentsafety
