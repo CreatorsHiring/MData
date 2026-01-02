@@ -223,6 +223,29 @@ app.get("/refund", (req, res) =>
   res.sendFile(path.join(__dirname, "refund.html"))
 );
 
+// TEMP: Firestore connectivity test
+app.get("/api/test-firestore", async (req, res) => {
+  try {
+    const testDoc = {
+      message: "Hello Firestore",
+      created_at: new Date().toISOString(),
+      source: "cloud-shell-test",
+    };
+
+    await submissionsCollection.add(testDoc);
+
+    res.json({
+      status: "success",
+      note: "Firestore write successful",
+      data: testDoc,
+    });
+  } catch (err) {
+    console.error("Firestore test failed:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Google Firestore Configuration
 // Ensure GOOGLE_APPLICATION_CREDENTIALS is set in environment or default creds are available
 if (!admin.apps.length) {
