@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Uploader - Upload Files</title>
+    <title>MData - Upload Files</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link
@@ -34,6 +34,7 @@
             animation: {
               "fade-in": "fadeIn 0.5s ease-out",
               "slide-up": "slideUp 0.5s ease-out",
+              "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
             },
             keyframes: {
               fadeIn: {
@@ -75,32 +76,6 @@
         border: 1px solid rgba(255, 255, 255, 0.05);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
           0 2px 4px -1px rgba(0, 0, 0, 0.1);
-      }
-      .glass-input {
-        background: rgba(255, 255, 255, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        backdrop-filter: blur(4px);
-      }
-      .dark .glass-input {
-        background: rgba(15, 23, 42, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      .glass-input:focus {
-        background: rgba(255, 255, 255, 0.7);
-        border-color: #3b82f6;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-      }
-      .dark .glass-input:focus {
-        background: rgba(15, 23, 42, 0.7);
-        border-color: #3b82f6;
-      }
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
       }
       body {
         background-image: radial-gradient(
@@ -167,14 +142,42 @@
       .dark ::-webkit-scrollbar-thumb:hover {
         background: rgba(255, 255, 255, 0.2);
       }
-    </style>
-    <style>
-      body {
-        min-height: max(884px, 100dvh);
+      .upload-zone {
+        background: linear-gradient(
+          145deg,
+          rgba(59, 130, 246, 0.05),
+          rgba(139, 92, 246, 0.05)
+        );
+        border: 2px dashed rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
       }
-      /* Bottom padding for content */
-      #scroll-container {
-        padding-bottom: 6rem;
+      .upload-zone:hover {
+        border-color: rgba(59, 130, 246, 0.6);
+        background: linear-gradient(
+          145deg,
+          rgba(59, 130, 246, 0.1),
+          rgba(139, 92, 246, 0.1)
+        );
+      }
+      .upload-zone.dragover {
+        border-color: #3b82f6;
+        background: linear-gradient(
+          145deg,
+          rgba(59, 130, 246, 0.15),
+          rgba(139, 92, 246, 0.15)
+        );
+        transform: scale(1.02);
+      }
+      /* Upload button states */
+      .upload-button:disabled {
+        background: #334155 !important;
+        color: #64748b !important;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+      .upload-button.uploading {
+        pointer-events: none;
+        cursor: wait;
       }
     </style>
   </head>
@@ -243,7 +246,6 @@
               >
               File History
             </a>
-
             <a
               class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
               href="wallet.html"
@@ -302,390 +304,402 @@
           </a>
         </div>
       </aside>
-      <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <header class="sticky top-0 z-30 glass border-b border-white/5">
-          <div class="flex items-center justify-between px-4 lg:px-8 py-4">
+
+      <div class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+        <header
+          class="h-16 glass border-b border-white/5 flex items-center justify-between px-6 sticky top-0 z-40"
+        >
+          <div class="flex items-center gap-4">
+            <button
+              class="sidebar-toggle p-2 -ml-2 text-slate-400 hover:text-white transition-colors"
+            >
+              <span class="material-symbols-outlined">menu</span>
+            </button>
             <div class="flex items-center gap-3">
-              <button
-                class="sidebar-toggle p-2 -ml-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
-              >
-                <span class="material-symbols-outlined">menu</span>
-              </button>
-              <h1
-                class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white"
-              >
-                Upload Files
-              </h1>
-            </div>
-            <div class="flex items-center gap-2">
-              <img
-                src="../MData.png"
-                alt="MData Logo"
-                class="h-8 w-8 object-contain"
-              />
-              <span
-                class="text-lg font-bold text-gray-900 dark:text-white hidden sm:inline"
+              <img src="../MData.png" alt="MData" class="h-8 w-8" />
+              <span class="text-lg font-bold text-white hidden sm:inline"
                 >MData</span
               >
             </div>
           </div>
+          <h1 class="text-lg font-semibold text-white hidden md:block">
+            Upload Files
+          </h1>
+          <div class="flex items-center gap-4">
+            <a
+              href="dashboard.html"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-white hover:bg-white/10 transition-colors"
+            >
+              <span class="material-symbols-outlined text-[18px]"
+                >arrow_back</span
+              >
+              <span class="hidden sm:inline">Dashboard</span>
+            </a>
+          </div>
         </header>
-        <div id="scroll-container" class="flex-1 overflow-y-auto scroll-smooth">
-          <div
-            class="max-w-7xl mx-auto w-full px-4 md:px-8 py-6 md:py-10 space-y-6 md:space-y-8 animate-fade-in"
-          >
-            <div class="space-y-2">
+
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+          <div class="max-w-6xl mx-auto space-y-6">
+            <!-- Page Title -->
+            <div class="animate-fade-in">
               <h2
-                class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight"
+                class="text-2xl sm:text-3xl font-bold text-white tracking-tight"
               >
-                Add your datasets
+                Upload Your Datasets
               </h2>
-              <p
-                class="text-gray-500 dark:text-gray-400 text-sm md:text-base max-w-2xl"
-              >
-                Upload high-quality data for AI training models. We support
-                various formats including CSV, JSON, ZIP archives, and image
-                folders.
+              <p class="text-slate-400 mt-1 font-light">
+                High-quality data earns higher payouts. Add titles and tags for
+                better discoverability.
               </p>
             </div>
-            <div
-              class="glass-card rounded-2xl p-1 transition-all duration-300 hover:shadow-lg hover:shadow-primary-500/5 group"
-            >
-              <div
-                id="drop-zone"
-                class="relative flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-[#0B0F19]/50 px-6 py-12 transition-all group-hover:border-primary-400 group-hover:bg-primary-50/50 dark:group-hover:bg-primary-900/10 cursor-pointer overflow-hidden"
-              >
-                <div
-                  class="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-primary-500/5 opacity-0 group-hover:opacity-100 transition-opacity"
-                ></div>
-                <!-- Hidden Input -->
-                <input type="file" id="file-input" class="hidden" multiple />
 
-                <div
-                  class="flex size-16 items-center justify-center rounded-full bg-white dark:bg-[#1C2433] shadow-sm text-primary-500 group-hover:scale-110 group-hover:text-primary-600 transition-all duration-300 z-10"
-                >
-                  <span
-                    class="material-symbols-outlined text-[32px] group-hover:animate-bounce"
-                    >cloud_upload</span
-                  >
-                </div>
-                <div class="flex flex-col items-center gap-1.5 z-10">
-                  <p
-                    class="text-gray-900 dark:text-white text-lg font-bold text-center"
-                  >
-                    Drag &amp; drop or click to upload
-                  </p>
-                  <p
-                    class="text-gray-500 dark:text-gray-400 text-sm text-center"
-                  >
-                    Max file size: 5GB per upload
-                  </p>
-                </div>
-                <button
-                  class="mt-4 px-6 py-2.5 rounded-full bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold shadow-lg shadow-primary-500/25 transition-all active:scale-95 z-10 pointer-events-none"
-                >
-                  Browse Files
-                </button>
-              </div>
-            </div>
-
-            <div class="grid lg:grid-cols-2 gap-8">
-              <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                  <h3
-                    class="text-gray-900 dark:text-white text-sm font-bold uppercase tracking-wider"
-                  >
-                    Selected Files (<span id="file-count">0</span>)
-                  </h3>
-                  <button
-                    id="clear-all-btn"
-                    class="text-xs text-primary-500 hover:text-primary-600 font-medium"
-                  >
-                    Clear All
-                  </button>
-                </div>
-                <div id="file-list" class="space-y-3">
-                  <!-- Dynamic Content -->
-                </div>
-              </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Left Column: Drop Zone & Files -->
               <div class="space-y-6">
-                <h3
-                  class="text-gray-900 dark:text-white text-sm font-bold uppercase tracking-wider"
+                <!-- Drop Zone -->
+                <div
+                  id="drop-zone"
+                  class="upload-zone glass-card rounded-2xl p-8 sm:p-12 cursor-pointer group relative overflow-hidden"
                 >
-                  Dataset Details
-                </h3>
-                <div class="glass-card rounded-2xl p-5 space-y-5">
-                  <div>
-                    <label
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
-                      for="dataset-title"
-                      >Dataset Title</label
-                    >
-                    <input
-                      id="dataset-title"
-                      class="w-full rounded-lg glass-input px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-shadow"
-                      placeholder="e.g. Urban Street Scenes 2024"
-                      type="text"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
-                      for="dataset-description"
-                    >
-                      Description
-                      <span class="text-gray-400 font-normal text-xs ml-1"
-                        >(Optional - Accurate descriptions boost quality
-                        score!)</span
-                      >
-                    </label>
-                    <textarea
-                      id="dataset-description"
-                      class="w-full rounded-lg glass-input px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-shadow resize-none"
-                      placeholder="Describe contents, source, and potential use cases..."
-                      rows="3"
-                    ></textarea>
-                  </div>
-                  <div>
-                    <label
-                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                      >Tags
-                      <span class="text-gray-400 font-normal text-xs ml-1"
-                        >(Relevant tags = higher quality score)</span
-                      ></label
-                    >
-                    <div id="tags-container" class="flex flex-wrap gap-2 mb-3">
-                      <!-- Dynamic tags will be added here -->
-                    </div>
-                    <div class="relative">
-                      <input
-                        id="tag-input"
-                        class="w-full rounded-lg glass-input pl-4 pr-10 py-2.5 text-sm text-gray-900 dark:text-white transition-shadow"
-                        placeholder="Add a tag and press Enter..."
-                        type="text"
-                      />
-                      <button
-                        id="add-tag-btn"
-                        type="button"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary-500 transition-colors p-1"
-                      >
-                        <span class="material-symbols-outlined text-[20px]"
-                          >add_circle</span
-                        >
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 p-5 mt-4"
-            >
-              <div
-                class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-emerald-500/10 to-transparent"
-              ></div>
-              <div class="relative flex items-center justify-between">
-                <div class="flex items-center gap-4">
+                  <input
+                    type="file"
+                    id="file-input"
+                    multiple
+                    class="hidden"
+                    accept="*/*"
+                  />
                   <div
-                    class="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30"
+                    class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-3xl -mr-16 -mt-16"
+                  ></div>
+                  <div
+                    class="relative z-10 flex flex-col items-center text-center"
                   >
-                    <span class="material-symbols-outlined text-[24px]"
-                      >attach_money</span
+                    <div
+                      class="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-lg shadow-primary/30 mb-4 group-hover:scale-110 transition-transform"
                     >
-                  </div>
-                  <div>
-                    <p
-                      class="text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wide mb-0.5"
-                    >
-                      Estimated Potential
-                    </p>
-                    <p
-                      class="text-gray-900 dark:text-white font-bold text-2xl leading-none"
-                    >
-                      $12.50
-                      <span class="text-gray-400 text-lg font-normal mx-1"
-                        >-</span
+                      <span class="material-symbols-outlined text-4xl"
+                        >cloud_upload</span
                       >
-                      $45.00
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">
+                      Drop files here
+                    </h3>
+                    <p class="text-slate-400 text-sm mb-4">
+                      or click to browse from your device
                     </p>
+                    <div
+                      class="flex flex-wrap justify-center gap-2 text-xs text-slate-500"
+                    >
+                      <span
+                        class="px-2 py-1 rounded-md bg-white/5 border border-white/10"
+                        >Images</span
+                      >
+                      <span
+                        class="px-2 py-1 rounded-md bg-white/5 border border-white/10"
+                        >Documents</span
+                      >
+                      <span
+                        class="px-2 py-1 rounded-md bg-white/5 border border-white/10"
+                        >Code</span
+                      >
+                      <span
+                        class="px-2 py-1 rounded-md bg-white/5 border border-white/10"
+                        >Audio</span
+                      >
+                      <span
+                        class="px-2 py-1 rounded-md bg-white/5 border border-white/10"
+                        >CSV/JSON</span
+                      >
+                    </div>
                   </div>
                 </div>
-                <span
-                  class="material-symbols-outlined text-emerald-500/30 text-4xl"
-                  >trending_up</span
-                >
-              </div>
-            </div>
-            <!-- Terms of Service Checkbox with increased spacing -->
-            <div class="flex items-start gap-3 px-1 mt-8">
-              <div class="relative flex items-center pt-0.5">
-                <input
-                  class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1C2433] checked:border-primary-500 checked:bg-primary-500 transition-all focus:ring-offset-0 focus:ring-2 focus:ring-primary-500/50"
-                  id="legal"
-                  type="checkbox"
-                />
-                <span
-                  class="material-symbols-outlined pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 text-[16px]"
-                  >check</span
-                >
-              </div>
-              <label
-                class="text-sm text-gray-600 dark:text-gray-400 leading-snug cursor-pointer select-none"
-                for="legal"
-              >
-                I certify that the content complies and I agree to the
-                <a
-                  id="tos-link"
-                  class="text-primary-500 hover:text-primary-600 underline decoration-primary-500/30 underline-offset-2 cursor-pointer"
-                  >Terms of Service</a
-                >.
-              </label>
-            </div>
 
-            <!-- Submit Section (scrolls with content) -->
-            <div class="glass-card rounded-2xl p-4 md:p-6 mt-6">
-              <div
-                class="flex flex-col sm:flex-row items-center justify-between gap-4"
-              >
-                <div class="flex justify-center gap-6 text-xs md:text-sm">
-                  <div class="text-center">
-                    <span class="text-gray-500 dark:text-gray-400"
-                      >Platform fee</span
+                <!-- Selected Files -->
+                <div class="glass-card rounded-2xl p-5">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"
+                      >
+                        <span class="material-symbols-outlined">folder</span>
+                      </div>
+                      <div>
+                        <h3 class="font-semibold text-white">Selected Files</h3>
+                        <p class="text-xs text-slate-500">
+                          <span id="file-count">0</span> files ready
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      id="clear-all-btn"
+                      class="text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
                     >
-                    <span
-                      class="block font-semibold text-gray-900 dark:text-white"
-                      >20%</span
-                    >
+                      Clear All
+                    </button>
                   </div>
-                  <div class="w-px h-8 bg-gray-200 dark:bg-white/10"></div>
-                  <div class="text-center">
-                    <span class="text-gray-500 dark:text-gray-400"
-                      >You keep</span
-                    >
-                    <span class="block font-bold text-emerald-500">80%</span>
+                  <div
+                    id="file-list"
+                    class="space-y-2 max-h-64 overflow-y-auto"
+                  >
+                    <div class="text-center py-8 text-slate-500 text-sm">
+                      <span
+                        class="material-symbols-outlined text-3xl mb-2 opacity-50 block"
+                        >inventory_2</span
+                      >
+                      No files selected yet
+                    </div>
                   </div>
                 </div>
-                <button
-                  id="upload-btn"
-                  disabled
-                  class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl font-bold h-12 px-8 text-sm md:text-base transition-all disabled:bg-gray-300 disabled:dark:bg-gray-700 disabled:text-gray-500 disabled:dark:text-gray-400 disabled:cursor-not-allowed disabled:opacity-60 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white shadow-lg shadow-primary-500/25 active:scale-[0.98]"
-                >
-                  <span>Upload & Submit</span>
-                  <span class="material-symbols-outlined text-[18px]"
-                    >arrow_forward</span
+              </div>
+
+              <!-- Right Column: Dataset Details -->
+              <div class="space-y-6">
+                <!-- Dataset Info Card -->
+                <div class="glass-card rounded-2xl p-5 sm:p-6">
+                  <div class="flex items-center gap-3 mb-6">
+                    <div
+                      class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30"
+                    >
+                      <span class="material-symbols-outlined">edit_note</span>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-white">Dataset Details</h3>
+                      <p class="text-xs text-slate-500">
+                        Add info to boost visibility
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="space-y-5">
+                    <div>
+                      <label class="block text-sm font-medium text-white mb-2">
+                        Dataset Title
+                      </label>
+                      <input
+                        id="dataset-title"
+                        type="text"
+                        placeholder="e.g. Urban Street Photos 2024"
+                        class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-white mb-2">
+                        Description
+                        <span class="text-slate-500 font-normal"
+                          >(Optional)</span
+                        >
+                      </label>
+                      <textarea
+                        id="dataset-description"
+                        rows="3"
+                        placeholder="Describe contents, source, and potential use cases..."
+                        class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none"
+                      ></textarea>
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-white mb-2">
+                        Tags
+                        <span class="text-slate-500 font-normal"
+                          >(Better tags = higher score)</span
+                        >
+                      </label>
+                      <div
+                        id="tags-container"
+                        class="flex flex-wrap gap-2 mb-3"
+                      ></div>
+                      <div class="flex gap-2">
+                        <input
+                          id="tag-input"
+                          type="text"
+                          placeholder="Add a tag and press Enter..."
+                          class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm"
+                        />
+                        <button
+                          id="add-tag-btn"
+                          class="px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors"
+                        >
+                          <span class="material-symbols-outlined text-[18px]"
+                            >add</span
+                          >
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Upload Tips -->
+                  <div class="mt-6 pt-6 border-t border-white/10">
+                    <h4
+                      class="text-sm font-semibold text-white mb-3 flex items-center gap-2"
+                    >
+                      <span
+                        class="material-symbols-outlined text-primary text-[18px]"
+                        >tips_and_updates</span
+                      >
+                      Tips for Higher Quality Scores
+                    </h4>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                      <li class="flex items-start gap-2">
+                        <span
+                          class="material-symbols-outlined text-emerald-500 text-[14px] mt-0.5"
+                          >check_circle</span
+                        >
+                        Add descriptive titles and accurate tags
+                      </li>
+                      <li class="flex items-start gap-2">
+                        <span
+                          class="material-symbols-outlined text-emerald-500 text-[14px] mt-0.5"
+                          >check_circle</span
+                        >
+                        Upload high-resolution images (min 1080p)
+                      </li>
+                      <li class="flex items-start gap-2">
+                        <span
+                          class="material-symbols-outlined text-emerald-500 text-[14px] mt-0.5"
+                          >check_circle</span
+                        >
+                        Ensure data is clean and well-structured
+                      </li>
+                      <li class="flex items-start gap-2">
+                        <span
+                          class="material-symbols-outlined text-emerald-500 text-[14px] mt-0.5"
+                          >check_circle</span
+                        >
+                        Provide detailed descriptions for context
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Terms & Submit -->
+                <div class="glass-card rounded-2xl p-5 sm:p-6">
+                  <div class="flex items-start gap-3 mb-6">
+                    <div class="relative flex items-center pt-0.5">
+                      <input
+                        class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-slate-600 bg-slate-800 checked:border-primary checked:bg-primary transition-all focus:ring-offset-0 focus:ring-2 focus:ring-primary/50"
+                        id="legal"
+                        type="checkbox"
+                      />
+                      <span
+                        class="material-symbols-outlined pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 text-[16px]"
+                        >check</span
+                      >
+                    </div>
+                    <label
+                      class="text-sm text-slate-400 leading-snug cursor-pointer select-none"
+                      for="legal"
+                    >
+                      I certify that the content complies and I agree to the
+                      <a
+                        id="tos-link"
+                        class="text-primary hover:text-blue-400 underline underline-offset-2 cursor-pointer"
+                        >Terms of Service</a
+                      >.
+                    </label>
+                  </div>
+
+                  <div
+                    class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10"
                   >
-                </button>
+                    <div class="flex gap-6 text-sm">
+                      <div class="text-center">
+                        <span class="text-slate-500 block">Platform</span>
+                        <span class="font-bold text-white">20%</span>
+                      </div>
+                      <div class="w-px bg-white/10"></div>
+                      <div class="text-center">
+                        <span class="text-slate-500 block">You keep</span>
+                        <span class="font-bold text-emerald-400">80%</span>
+                      </div>
+                    </div>
+                    <button
+                      id="upload-btn"
+                      disabled
+                      class="upload-button w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold text-white transition-all bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary shadow-lg shadow-primary/25 active:scale-[0.98]"
+                    >
+                      <span>Upload & Submit</span>
+                      <span class="material-symbols-outlined text-[20px]"
+                        >arrow_forward</span
+                      >
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
-      <!-- Terms of Service Modal -->
+        </main>
+      </div>
+    </div>
+
+    <!-- Terms of Service Modal -->
+    <div
+      id="tos-modal"
+      class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4"
+    >
       <div
-        id="tos-modal"
-        class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"
+        class="glass-card rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col shadow-2xl"
       >
         <div
-          class="glass-card rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col shadow-2xl"
+          class="flex items-center justify-between p-6 border-b border-white/10"
         >
-          <div
-            class="flex items-center justify-between p-6 border-b border-white/10"
+          <h2 class="text-2xl font-bold text-white">Terms of Service</h2>
+          <button
+            id="close-tos"
+            class="p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-              Terms of Service
-            </h2>
-            <button
-              id="close-tos"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <span
-                class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                >close</span
-              >
-            </button>
+            <span class="material-symbols-outlined text-slate-400">close</span>
+          </button>
+        </div>
+        <div class="overflow-y-auto p-6 text-sm text-slate-300 space-y-4">
+          <div>
+            <h3 class="font-bold text-lg mb-2 text-white">
+              1. User Submissions & Grant of Rights
+            </h3>
+            <p>
+              Users may upload content ("Submitted Data") including but not
+              limited to Photos, Documents, Audio, Video, and Code. By
+              submitting, you represent that you hold all necessary rights and
+              that the content is not subject to any third-party claims.
+            </p>
           </div>
-          <div
-            class="overflow-y-auto p-6 text-sm text-gray-700 dark:text-gray-300 space-y-4"
+          <div>
+            <h3 class="font-bold text-lg mb-2 text-white">2. License Grant</h3>
+            <p>
+              By uploading content to the platform, you grant MData a
+              non-exclusive, worldwide, royalty-free license to use, reproduce,
+              modify, and distribute your content for AI training and related
+              purposes.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-bold text-lg mb-2 text-white">
+              3. Prohibited Content
+            </h3>
+            <p>
+              You may not upload content that is illegal, harmful, threatening,
+              abusive, harassing, defamatory, vulgar, obscene, or otherwise
+              objectionable. We reserve the right to remove any content that
+              violates these terms.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-bold text-lg mb-2 text-white">4. Payment Terms</h3>
+            <p>
+              Payments are calculated based on the quality score assigned to
+              your content by our AI evaluation system. The platform retains 20%
+              of all earnings as a service fee. Minimum withdrawal amount is
+              ₹100.
+            </p>
+          </div>
+        </div>
+        <div class="p-6 border-t border-white/10">
+          <button
+            id="close-tos-btn"
+            class="w-full py-3 rounded-xl bg-primary hover:bg-blue-600 text-white font-semibold transition-colors"
           >
-            <div>
-              <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">
-                1. User Submissions & Grant of Rights
-              </h3>
-              <p>
-                Users may upload content ("Submitted Data") including but not
-                limited to Photos, Documents, Audio, Video, and Code. By
-                submitting, you represent that you hold all necessary rights and
-                that the content is not subject to any third-party claims.
-              </p>
-            </div>
-            <div>
-              <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">
-                2. Irrevocable Ownership Transfer
-              </h3>
-              <p class="mb-2">
-                By clicking "Accept" and uploading data, you hereby irrevocably
-                assign and transfer all right, title, and interest in the
-                Submitted Data to MData. This includes all Intellectual Property
-                rights for commercial and non-commercial exploitation globally.
-              </p>
-              <p class="mb-2">
-                <strong>Waiver of Moral Rights:</strong> You waive any "moral
-                rights" or attribution rights regarding the data.
-              </p>
-              <p>
-                <strong>Non-Revocable:</strong> Once data is processed and the
-                user is credited, the submission cannot be deleted or revoked,
-                as it may already be integrated into immutable AI training sets.
-              </p>
-            </div>
-            <div>
-              <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">
-                3. Responsible AI & Content Safety
-              </h3>
-              <p class="mb-2">
-                You agree to only submit data that is safe and legal. The
-                Platform uses AI-driven safety filters (Azure AI Content Safety)
-                to scan for:
-              </p>
-              <ul class="list-disc list-inside space-y-1 ml-4">
-                <li>Malware or malicious code.</li>
-                <li>Inappropriate, hateful, or illegal imagery.</li>
-                <li>
-                  Personally Identifiable Information (PII) that violates
-                  privacy laws (GDPR/DPDP).
-                </li>
-              </ul>
-              <p class="mt-2">
-                Submissions failing these checks will be rejected without
-                payment.
-              </p>
-            </div>
-            <div>
-              <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">
-                4. Compensation & Revenue Share
-              </h3>
-              <p class="mb-2">
-                The Platform operates on a 70/30 Revenue Share model.
-              </p>
-              <p class="mb-2">
-                <strong>Earnings:</strong> Users are entitled to 70% of the
-                price allotted to their specific file once it is included in a
-                dataset successfully purchased by an Agency.
-              </p>
-              <p>
-                <strong>Finality:</strong> Payment amounts are calculated based
-                on the "Quality Index" generated by the Platform's AI.
-              </p>
-            </div>
-          </div>
-          <div class="p-6 border-t border-white/10 flex justify-end">
-            <button
-              id="close-tos-btn"
-              class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-colors"
-            >
-              I Understand
-            </button>
-          </div>
+            I Understand
+          </button>
         </div>
       </div>
     </div>
@@ -693,7 +707,7 @@
     <!-- Notification Toast -->
     <div id="notification-toast" class="fixed bottom-6 right-6 z-50 hidden">
       <div
-        class="glass-card rounded-xl p-4 border border-white/10 shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300"
+        class="glass-card rounded-xl p-4 border border-white/10 shadow-2xl flex items-center gap-3 animate-slide-up"
       >
         <div
           id="toast-icon"
@@ -714,6 +728,7 @@
         </button>
       </div>
     </div>
+
     <script>
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
@@ -799,7 +814,7 @@
           tagsContainer.innerHTML = userTags
             .map(
               (tag, index) => `
-            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-primary-500/10 text-primary-400 border border-primary-500/20">
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-primary/10 text-primary border border-primary/20">
               ${tag}
               <button onclick="removeTag(${index})" class="hover:text-red-400 transition-colors ml-1">
                 <span class="material-symbols-outlined text-[14px]">close</span>
@@ -846,14 +861,14 @@
         // Drag & Drop
         dropZone.addEventListener("dragover", (e) => {
           e.preventDefault();
-          dropZone.classList.add("border-primary-400");
+          dropZone.classList.add("dragover");
         });
         dropZone.addEventListener("dragleave", () => {
-          dropZone.classList.remove("border-primary-400");
+          dropZone.classList.remove("dragover");
         });
         dropZone.addEventListener("drop", (e) => {
           e.preventDefault();
-          dropZone.classList.remove("border-primary-400");
+          dropZone.classList.remove("dragover");
           handleFiles(Array.from(e.dataTransfer.files));
         });
 
@@ -863,34 +878,38 @@
         }
 
         function renderFiles() {
-          fileListContainer.innerHTML = "";
-          selectedFiles.forEach((file, index) => {
-            const html = `
-                <div class="glass-card rounded-xl p-3 sm:p-4 group">
-                    <div class="flex items-start gap-4">
-                      <div class="flex items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-500/10 shrink-0 size-10 sm:size-12 text-emerald-600 dark:text-emerald-400">
-                        <span class="material-symbols-outlined text-[24px]">description</span>
-                      </div>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-start">
-                          <p class="text-gray-900 dark:text-white text-sm font-medium truncate">${
-                            file.name
-                          }</p>
-                          <button onclick="removeFile(${index})" class="text-gray-400 hover:text-red-500 p-1">
-                            <span class="material-symbols-outlined text-[20px]">delete</span>
-                          </button>
-                        </div>
-                        <p class="text-gray-500 dark:text-gray-400 text-xs">${(
-                          file.size /
-                          1024 /
-                          1024
-                        ).toFixed(2)} MB</p>
-                      </div>
-                    </div>
+          if (selectedFiles.length === 0) {
+            fileListContainer.innerHTML = `
+              <div class="text-center py-8 text-slate-500 text-sm">
+                <span class="material-symbols-outlined text-3xl mb-2 opacity-50 block">inventory_2</span>
+                No files selected yet
+              </div>
+            `;
+          } else {
+            fileListContainer.innerHTML = "";
+            selectedFiles.forEach((file, index) => {
+              const html = `
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all group">
+                  <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[20px]">description</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-white truncate">${
+                      file.name
+                    }</p>
+                    <p class="text-xs text-slate-500">${(
+                      file.size /
+                      1024 /
+                      1024
+                    ).toFixed(2)} MB</p>
+                  </div>
+                  <button onclick="removeFile(${index})" class="p-2 text-slate-500 hover:text-red-400 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                  </button>
                 </div>`;
-            fileListContainer.insertAdjacentHTML("beforeend", html);
-          });
-          // Update counts
+              fileListContainer.insertAdjacentHTML("beforeend", html);
+            });
+          }
           const countEl = document.getElementById("file-count");
           if (countEl) countEl.textContent = selectedFiles.length;
         }
@@ -961,11 +980,10 @@
           const btnText = uploadBtn.querySelector("span:first-child");
           const originalText = btnText.textContent;
           btnText.textContent = "Uploading...";
-          uploadBtn.disabled = true;
+          uploadBtn.classList.add("uploading");
 
           try {
             for (const file of selectedFiles) {
-              // 1. Get SAS Token
               const sasRes = await fetch(
                 `/api/storage/sas?filename=${encodeURIComponent(file.name)}`
               );
@@ -973,16 +991,11 @@
 
               if (!sasUrl) throw new Error("Failed to get upload token");
 
-              // 2. Construct Blob URL (sasUrl is container URL with SAS, append blob name)
-              // Parse the SAS URL to insert the blob name before the query string
               const sasUrlObj = new URL(sasUrl);
               const blobUrl = `${sasUrlObj.origin}${
                 sasUrlObj.pathname
               }/${encodeURIComponent(file.name)}${sasUrlObj.search}`;
 
-              // 3. Upload to Blob with metadata
-              // NOTE: 'x-ms-meta-*' headers are lowercased by Azure strictly
-              // The Python function reads these from blob metadata for quality scoring
               const datasetTitle = document
                 .getElementById("dataset-title")
                 .value.trim();
@@ -1004,7 +1017,6 @@
                 body: file,
               });
 
-              // Call process-file API to trigger AI analysis (replaces blob trigger)
               try {
                 const processRes = await fetch("/api/process-file", {
                   method: "POST",
@@ -1028,14 +1040,12 @@
 
             showToast("Upload & Processing Complete!", "success");
 
-            // Store uploaded filenames to check for
             const uploadedFileNames = selectedFiles.map((f) => f.name);
             selectedFiles = [];
             renderFiles();
             btnText.textContent = originalText;
-            uploadBtn.disabled = false;
+            uploadBtn.classList.remove("uploading");
 
-            // Poll for processed files every 5 seconds, up to 4 times
             let pollAttempts = 0;
             const maxAttempts = 4;
 
@@ -1046,7 +1056,6 @@
                 const stats = await statsRes.json();
 
                 if (stats.history && stats.history.length > 0) {
-                  // Check if any of our uploaded files appear with a quality score
                   const found = stats.history.some((file) =>
                     uploadedFileNames.some(
                       (name) =>
@@ -1068,7 +1077,6 @@
                   }
                 }
 
-                // If not found and still have attempts, try again
                 if (pollAttempts < maxAttempts) {
                   showToast(
                     `Processing... (${pollAttempts}/${maxAttempts})`,
@@ -1076,7 +1084,6 @@
                   );
                   setTimeout(pollForProcessedFile, 5000);
                 } else {
-                  // Max attempts reached, redirect anyway
                   showToast("Redirecting to dashboard...", "success");
                   setTimeout(() => {
                     window.location.href = "dashboard.html";
@@ -1084,20 +1091,18 @@
                 }
               } catch (err) {
                 console.error("Poll error:", err);
-                // On error, redirect anyway after a delay
                 setTimeout(() => {
                   window.location.href = "dashboard.html";
                 }, 2000);
               }
             }
 
-            // Start polling after 3 seconds initial wait
             setTimeout(pollForProcessedFile, 3000);
           } catch (error) {
             console.error("Upload failed", error);
             showToast("Upload failed: " + error.message, "error");
             btnText.textContent = originalText;
-            uploadBtn.disabled = false;
+            uploadBtn.classList.remove("uploading");
           }
         });
       });
