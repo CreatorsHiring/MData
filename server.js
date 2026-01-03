@@ -231,14 +231,8 @@ let database;
 let usersContainer; // For contributor accounts
 let agenciesContainer; // For agency/buyer accounts
 
-let cosmosError = null; // Store initialization error
-
 async function initCosmos() {
   try {
-    console.log("Initializing Cosmos DB...");
-    console.log("Endpoint:", endpoint ? "Set" : "Missing");
-    console.log("Key:", key ? "Set" : "Missing");
-
     const client = new CosmosClient({ endpoint, key });
 
     // Get or create database
@@ -263,31 +257,12 @@ async function initCosmos() {
       });
     agenciesContainer = agenciesC;
     console.log(`Connected to Azure Cosmos DB: ${databaseId} > Agencies`);
-    cosmosError = null;
   } catch (err) {
     console.error("Failed to connect to Cosmos DB:", err.message);
-    cosmosError = err.message;
   }
 }
 
 initCosmos();
-
-// DEBUG ENDPOINT
-app.get("/api/debug", (req, res) => {
-  res.json({
-    env: {
-      COSMOS_ENDPOINT: process.env.COSMOS_ENDPOINT ? "Set" : "Missing",
-      COSMOS_KEY: process.env.COSMOS_KEY ? "Set" : "Missing",
-      NODE_ENV: process.env.NODE_ENV,
-    },
-    cosmos: {
-      connected: !!database,
-      usersContainer: !!usersContainer,
-      agenciesContainer: !!agenciesContainer,
-      lastError: cosmosError,
-    },
-  });
-});
 
 // Azure Storage Configuration
 const {
