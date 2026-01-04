@@ -5,6 +5,11 @@ const admin = require("firebase-admin");
 const { getFirestore } = require("firebase-admin/firestore");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const Razorpay = require("razorpay");
+const session = require("express-session");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const GitHubStrategy = require("passport-github2").Strategy;
 
 // Azure AI SDKs for file processing
 const { AzureOpenAI } = require("@azure/openai");
@@ -297,6 +302,73 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
+// ========== OAUTH ROUTES ==========
+
+// Google OAuth - User
+app.get("/auth/google", (req, res, next) => {
+  req.session.oauthRole = req.query.role || "user";
+  passport.authenticate("google", { scope: ["profile", "email"] })(
+    req,
+    res,
+    next
+  );
+});
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/?error=oauth_failed" }),
+  (req, res) => {
+    const role = req.user.role || "user";
+    const redirectUrl =
+      role === "agency" ? "/Agency/dashboard.html" : "/User/dashboard.html";
+
+    // Set localStorage via client-side script
+    const userData = JSON.stringify({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      role: role,
+    });
+
+    res.send(`
+      <script>
+        localStorage.setItem('user', '${userData.replace(/'/g, "\\'")}');
+        window.location.href = '${redirectUrl}';
+      </script>
+    `);
+  }
+);
+
+// GitHub OAuth
+app.get("/auth/github", (req, res, next) => {
+  req.session.oauthRole = req.query.role || "user";
+  passport.authenticate("github", { scope: ["user:email"] })(req, res, next);
+});
+
+app.get(
+  "/auth/github/callback",
+  passport.authenticate("github", { failureRedirect: "/?error=oauth_failed" }),
+  (req, res) => {
+    const role = req.user.role || "user";
+    const redirectUrl =
+      role === "agency" ? "/Agency/dashboard.html" : "/User/dashboard.html";
+
+    const userData = JSON.stringify({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      role: role,
+    });
+
+    res.send(`
+      <script>
+        localStorage.setItem('user', '${userData.replace(/'/g, "\\'")}');
+        window.location.href = '${redirectUrl}';
+      </script>
+    `);
+  }
+);
+
 // API: Generate SAS Token
 app.get("/api/storage/sas", async (req, res) => {
   try {
@@ -394,7 +466,7 @@ app.get("/api/stats", async (req, res) => {
           ? new Date(item.upload_timestamp).toLocaleDateString()
           : "N/A",
         quality_score: score,
-        earnings: isSold ? `$${userShare.toFixed(2)}` : "$0.00",
+        earnings: isSold ? `₹${userShare.toFixed(2)}` : "₹0.00",
         status: isSold ? "Sold" : item.status || "Pending",
         sold_to: item.sold_to || null,
       });
@@ -411,7 +483,7 @@ app.get("/api/stats", async (req, res) => {
     }));
 
     res.json({
-      earnings: `$${totalEarnings.toFixed(2)}`,
+      earnings: `₹${totalEarnings.toFixed(2)}`,
       quality: `${avgQuality}%`,
       total_uploads: items.length,
       history: history,
@@ -421,7 +493,7 @@ app.get("/api/stats", async (req, res) => {
     console.error("Stats Error:", error);
     // Fallback for demo if DB read fails (avoiding empty screen in dev)
     res.json({
-      earnings: "$0.00",
+      earnings: "₹0.00",
       quality: "0%",
       total_uploads: 0,
       history: [],
@@ -537,25 +609,6 @@ app.get("/api/market/summaries", async (req, res) => {
     }));
 
     // Mock if empty (for demo)
-    if (result.length === 0) {
-      result.push(
-        {
-          market_category: "Autonomous Driving",
-          total_files: 1240,
-          avg_quality: 94.5,
-        },
-        {
-          market_category: "Medical Imaging",
-          total_files: 850,
-          avg_quality: 98.2,
-        },
-        {
-          market_category: "Developer Tools",
-          total_files: 2100,
-          avg_quality: 91.5,
-        }
-      );
-    }
 
     res.json(result);
   } catch (err) {
@@ -1377,6 +1430,512 @@ app.post("/api/process-file", async (req, res) => {
   } catch (err) {
     console.error("Process File Error:", err);
     res.status(500).json({ error: err.message || "Failed to process file" });
+  }
+});
+
+// ========== RAZORPAY PAYMENT INTEGRATION ==========
+
+// Initialize Razorpay with API credentials
+let razorpay = null;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+  console.log(
+    `Razorpay initialized (Test Mode: ${process.env.RAZORPAY_KEY_ID.startsWith(
+      "rzp_test_"
+    )})`
+  );
+}
+
+// Helper to get/create Orders container
+async function getOrdersContainer() {
+  const { container } = await database.containers.createIfNotExists({
+    id: "Orders",
+    partitionKey: { paths: ["/id"] },
+  });
+  return container;
+}
+
+// Helper to get/create Withdrawals container
+async function getWithdrawalsContainer() {
+  const { container } = await database.containers.createIfNotExists({
+    id: "Withdrawals",
+  });
+  return container;
+}
+
+// API: Create Razorpay Order for Agency Checkout
+app.post("/api/checkout/create-payment", async (req, res) => {
+  const { agencyId, cartItems, totalAmount, email, phone, name } = req.body;
+
+  if (!agencyId || !cartItems || !totalAmount) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  if (!razorpay) {
+    return res.status(500).json({
+      error:
+        "Payment gateway not configured. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to .env",
+    });
+  }
+
+  try {
+    const orderId = `order_${Date.now()}_${crypto
+      .randomBytes(4)
+      .toString("hex")}`;
+
+    // Create Razorpay order
+    const razorpayOrder = await razorpay.orders.create({
+      amount: Math.round(totalAmount * 100), // Razorpay uses paise
+      currency: "INR",
+      receipt: orderId,
+      notes: {
+        agencyId: agencyId,
+        cartItems: cartItems.join(","),
+        email: email || "",
+        phone: phone || "",
+      },
+    });
+
+    console.log("Razorpay Order Created:", razorpayOrder.id);
+
+    // Store pending order in Cosmos DB
+    const ordersContainer = await getOrdersContainer();
+    const order = {
+      id: orderId,
+      agencyId,
+      items: cartItems,
+      totalAmount,
+      razorpayOrderId: razorpayOrder.id,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+    };
+    await ordersContainer.items.create(order);
+
+    // Return order details for frontend Razorpay checkout
+    res.json({
+      success: true,
+      orderId,
+      razorpayOrderId: razorpayOrder.id,
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      name: "MData",
+      description: `Purchase ${cartItems.length} dataset(s)`,
+      prefill: {
+        name: name || "Customer",
+        email: email || "",
+        contact: phone || "",
+      },
+    });
+  } catch (err) {
+    console.error("Razorpay Order Error:", err);
+    res.status(500).json({ error: err.message || "Failed to create payment" });
+  }
+});
+
+// API: Verify Razorpay Payment (called after checkout is complete)
+app.post("/api/checkout/verify-payment", async (req, res) => {
+  console.log("Payment Verification Request:", req.body);
+
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    orderId,
+  } = req.body;
+
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    return res.status(400).json({ error: "Missing payment verification data" });
+  }
+
+  // Verify signature
+  const body = razorpay_order_id + "|" + razorpay_payment_id;
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(body)
+    .digest("hex");
+
+  if (expectedSignature !== razorpay_signature) {
+    console.error("Payment signature verification failed");
+    return res.status(400).json({ error: "Payment verification failed" });
+  }
+
+  console.log("Payment signature verified successfully");
+
+  try {
+    const ordersContainer = await getOrdersContainer();
+
+    // Find order by razorpay_order_id
+    const { resources: orders } = await ordersContainer.items
+      .query({
+        query: "SELECT * FROM c WHERE c.razorpayOrderId = @rozId",
+        parameters: [{ name: "@rozId", value: razorpay_order_id }],
+      })
+      .fetchAll();
+
+    if (orders.length === 0) {
+      console.warn("Order not found for Razorpay order:", razorpay_order_id);
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const order = orders[0];
+
+    // Update order with payment details
+    order.status = "paid";
+    order.razorpayPaymentId = razorpay_payment_id;
+    order.razorpaySignature = razorpay_signature;
+    order.paidAt = new Date().toISOString();
+
+    // Update order - use upsert for reliability
+    await ordersContainer.items.upsert(order);
+
+    // Mark datasets as purchased and credit seller wallets
+    // First, get the actual cart items from agency to find categories
+    const agenciesContainer = database.container("Agencies");
+    const submissionsContainer = database.container("Submissions");
+
+    console.log("Processing purchased items:", order.items);
+
+    // Get the agency's cart to find the categories for each cart item
+    let purchasedCategories = [];
+    try {
+      const { resources: agencies } = await agenciesContainer.items
+        .query({
+          query: "SELECT * FROM c WHERE c.id = @id",
+          parameters: [{ name: "@id", value: order.agencyId }],
+        })
+        .fetchAll();
+
+      if (agencies.length > 0 && agencies[0].cart) {
+        const cart = agencies[0].cart;
+        // Map cart item IDs to categories
+        for (const itemId of order.items) {
+          const cartItem = cart.find((c) => c.id === itemId);
+          if (cartItem && cartItem.category) {
+            purchasedCategories.push(cartItem.category);
+            console.log(
+              "Found category for cart item:",
+              itemId,
+              "->",
+              cartItem.category
+            );
+          } else {
+            // If the itemId IS the category (fallback for older cart format)
+            purchasedCategories.push(itemId);
+            console.log("Using itemId as category:", itemId);
+          }
+        }
+      }
+    } catch (cartLookupErr) {
+      console.error("Error fetching agency cart:", cartLookupErr.message);
+      // Fallback: assume cart items are category names
+      purchasedCategories = order.items;
+    }
+
+    console.log("Purchased categories:", purchasedCategories);
+
+    // Now update all submissions in these categories
+    for (const category of purchasedCategories) {
+      try {
+        console.log("Looking for submissions in category:", category);
+        const { resources: allSubmissions } = await submissionsContainer.items
+          .query({
+            query: "SELECT * FROM c WHERE c.market_category = @cat",
+            parameters: [{ name: "@cat", value: category }],
+          })
+          .fetchAll();
+
+        // Filter to only unsold items
+        const submissions = allSubmissions.filter((s) => !s.sold_to);
+
+        console.log("Found submissions in category:", submissions.length);
+
+        for (const submission of submissions) {
+          try {
+            console.log(
+              "Updating submission:",
+              submission.id,
+              "from user:",
+              submission.userId
+            );
+            submission.sold_to = order.agencyId;
+            submission.sold_price = submission.payout || 25;
+            submission.transaction_date = new Date().toISOString();
+            submission.status = "Purchased";
+
+            await submissionsContainer
+              .item(submission.id, submission.userId)
+              .replace(submission);
+            console.log("Submission updated successfully:", submission.id);
+          } catch (updateErr) {
+            console.error(
+              "Error updating submission:",
+              submission.id,
+              updateErr.message
+            );
+          }
+        }
+      } catch (queryErr) {
+        console.error(
+          "Error querying submissions for category:",
+          category,
+          queryErr.message
+        );
+      }
+    }
+
+    // Clear agency cart
+    try {
+      const agenciesContainer = database.container("Agencies");
+      const { resources: agencies } = await agenciesContainer.items
+        .query({
+          query: "SELECT * FROM c WHERE c.id = @id",
+          parameters: [{ name: "@id", value: order.agencyId }],
+        })
+        .fetchAll();
+
+      if (agencies.length > 0) {
+        const agency = agencies[0];
+        agency.cart = [];
+        await agenciesContainer.item(agency.id, agency.id).replace(agency);
+      }
+    } catch (cartErr) {
+      console.warn("Error clearing cart:", cartErr);
+    }
+
+    console.log(
+      `Payment ${razorpay_payment_id} verified for order ${order.id}`
+    );
+
+    res.json({
+      success: true,
+      message: "Payment verified successfully",
+      orderId: order.id,
+    });
+  } catch (err) {
+    console.error("Payment verification error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Check Payment Status
+app.get("/api/checkout/status/:orderId", async (req, res) => {
+  const { orderId } = req.params;
+  const { agencyId } = req.query;
+
+  if (!orderId || !agencyId) {
+    return res.status(400).json({ error: "Missing orderId or agencyId" });
+  }
+
+  try {
+    const ordersContainer = await getOrdersContainer();
+    const { resource: order } = await ordersContainer
+      .item(orderId, agencyId)
+      .read();
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.json({
+      orderId: order.id,
+      status: order.status,
+      paidAt: order.paidAt,
+      items: order.items,
+    });
+  } catch (err) {
+    console.error("Order status error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== USER WITHDRAWAL SYSTEM ==========
+
+// API: Request Withdrawal (Manual processing until Marketplace API)
+app.post("/api/user/withdraw-request", async (req, res) => {
+  const { userId, amount, upiId, bankAccount, ifsc, accountName } = req.body;
+
+  if (!userId || !amount) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  // Minimum withdrawal
+  const MIN_WITHDRAWAL = 100;
+  if (amount < MIN_WITHDRAWAL) {
+    return res
+      .status(400)
+      .json({ error: `Minimum withdrawal is ₹${MIN_WITHDRAWAL}` });
+  }
+
+  // Must have either UPI or bank details
+  if (!upiId && (!bankAccount || !ifsc)) {
+    return res
+      .status(400)
+      .json({ error: "Please provide UPI ID or bank account details" });
+  }
+
+  try {
+    // Get user balance from submissions
+    const submissionsContainer = database.container("Submissions");
+    const { resources: items } = await submissionsContainer.items
+      .query({
+        query: "SELECT * FROM c WHERE c.userId = @userId AND c.sold_to != null",
+        parameters: [{ name: "@userId", value: userId }],
+      })
+      .fetchAll();
+
+    const totalEarnings = items.reduce((sum, item) => {
+      const payout = item.payout || 0;
+      return sum + payout * 0.8; // 80% to user
+    }, 0);
+
+    // Get already withdrawn/pending amounts
+    const withdrawalsContainer = await getWithdrawalsContainer();
+    const { resources: withdrawals } = await withdrawalsContainer.items
+      .query({
+        query:
+          "SELECT * FROM c WHERE c.userId = @userId AND c.status IN ('pending', 'processing', 'completed')",
+        parameters: [{ name: "@userId", value: userId }],
+      })
+      .fetchAll();
+
+    const withdrawnAmount = withdrawals.reduce((sum, w) => sum + w.amount, 0);
+    const availableBalance = totalEarnings - withdrawnAmount;
+
+    if (amount > availableBalance) {
+      return res.status(400).json({
+        error: `Insufficient balance. Available: ₹${availableBalance.toFixed(
+          2
+        )}`,
+      });
+    }
+
+    // Create withdrawal request
+    const withdrawalId = `withdraw_${Date.now()}_${crypto
+      .randomBytes(4)
+      .toString("hex")}`;
+    const withdrawal = {
+      id: withdrawalId,
+      userId,
+      amount,
+      upiId: upiId || null,
+      bankAccount: bankAccount || null,
+      ifsc: ifsc || null,
+      accountName: accountName || null,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      processedAt: null,
+    };
+
+    await withdrawalsContainer.items.create(withdrawal);
+
+    res.json({
+      success: true,
+      message:
+        "Withdrawal request submitted. Processing within 3-5 business days.",
+      withdrawalId,
+      balance: availableBalance - amount,
+    });
+  } catch (err) {
+    console.error("Withdrawal request error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Get User Withdrawals
+app.get("/api/user/withdrawals", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
+  try {
+    const withdrawalsContainer = await getWithdrawalsContainer();
+    const { resources: withdrawals } = await withdrawalsContainer.items
+      .query({
+        query:
+          "SELECT * FROM c WHERE c.userId = @userId ORDER BY c.createdAt DESC",
+        parameters: [{ name: "@userId", value: userId }],
+      })
+      .fetchAll();
+
+    // Calculate available balance
+    const submissionsContainer = database.container("Submissions");
+    const { resources: items } = await submissionsContainer.items
+      .query({
+        query: "SELECT * FROM c WHERE c.userId = @userId AND c.sold_to != null",
+        parameters: [{ name: "@userId", value: userId }],
+      })
+      .fetchAll();
+
+    const totalEarnings = items.reduce((sum, item) => {
+      return sum + (item.payout || 0) * 0.8;
+    }, 0);
+
+    const withdrawnAmount = withdrawals
+      .filter((w) => w.status !== "rejected")
+      .reduce((sum, w) => sum + w.amount, 0);
+
+    res.json({
+      withdrawals,
+      totalEarnings: totalEarnings.toFixed(2),
+      withdrawnAmount: withdrawnAmount.toFixed(2),
+      availableBalance: (totalEarnings - withdrawnAmount).toFixed(2),
+    });
+  } catch (err) {
+    console.error("Get withdrawals error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Get User Balance
+app.get("/api/user/balance", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
+  try {
+    const submissionsContainer = database.container("Submissions");
+    const { resources: items } = await submissionsContainer.items
+      .query({
+        query: "SELECT * FROM c WHERE c.userId = @userId AND c.sold_to != null",
+        parameters: [{ name: "@userId", value: userId }],
+      })
+      .fetchAll();
+
+    const totalEarnings = items.reduce((sum, item) => {
+      return sum + (item.payout || 0) * 0.8;
+    }, 0);
+
+    const withdrawalsContainer = await getWithdrawalsContainer();
+    const { resources: withdrawals } = await withdrawalsContainer.items
+      .query({
+        query:
+          "SELECT * FROM c WHERE c.userId = @userId AND c.status IN ('pending', 'processing', 'completed')",
+        parameters: [{ name: "@userId", value: userId }],
+      })
+      .fetchAll();
+
+    const withdrawnAmount = withdrawals.reduce((sum, w) => sum + w.amount, 0);
+    const pendingWithdrawals = withdrawals
+      .filter((w) => w.status === "pending" || w.status === "processing")
+      .reduce((sum, w) => sum + w.amount, 0);
+
+    res.json({
+      totalEarnings: totalEarnings.toFixed(2),
+      availableBalance: (totalEarnings - withdrawnAmount).toFixed(2),
+      pendingWithdrawals: pendingWithdrawals.toFixed(2),
+      completedWithdrawals: (withdrawnAmount - pendingWithdrawals).toFixed(2),
+    });
+  } catch (err) {
+    console.error("Balance error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 

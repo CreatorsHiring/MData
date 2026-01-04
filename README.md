@@ -1,86 +1,144 @@
-# DataNexus Project Scaffold
+# MData - Ethical AI Data Marketplace
 
-A production-grade, scalable data marketplace for the Microsoft Imagine Cup 2026.
+> **Fueling AI with Ethical Data**
 
-## Structure
+A marketplace where data contributors earn rewards for quality datasets, and AI agencies access verified training data.
 
-- `DataNexus_App/`: Flutter Frontend (Web/Mobile).
-- `DataNexus_Backend/`: Azure Functions Python Backend.
+**Live:** https://mdata.co.in
 
-## 1. Setup DataNexus_App (Frontend)
+---
 
-1.  **Prerequisites**: Ensure Flutter SDK is installed.
-2.  **Install Dependencies**:
-    ```bash
-    cd DataNexus_App
-    flutter pub get
-    ```
-3.  **Configuration**:
-    - Open `lib/services/data_upload_service.dart`.
-    - Update `_azureSasUrl` with your Azure Container SAS URL (allow Write/Put permissions).
-4.  **Run**:
-    ```bash
-    flutter run -d chrome  # for Web
-    # or
-    flutter run            # for Mobile
-    ```
+## 🚀 Features
 
-## 2. Setup DataNexus_Backend (Azure Layer)
+- **For Contributors:** Upload datasets → AI analysis → Earn payouts based on quality
+- **For Agencies:** Browse marketplace → Cart system → Purchase verified datasets
+- **AI-Powered:** GPT-4o quality scoring, Vision AI image tagging
+- **Secure:** Email OTP auth, encrypted storage, SSL
 
-1.  **Prerequisites**: Python 3.9+, Azure Functions Core Tools.
-2.  **Install Dependencies**:
-    ```bash
-    cd DataNexus_Backend
-    pip install -r requirements.txt
-    ```
-3.  **Environment Variables**:
-    - Rename `local.settings.json.example` to `local.settings.json`.
-    - Fill in the values:
-      - `AzureWebJobsStorage`: Connection string for the storage account connected to the function.
-      - `COSMOS_*`: Your Cosmos DB credentials.
-      - `AZURE_OPENAI_*`: Your Azure OpenAI GPT-4o credentials.
-      - `VISION_*`: Your Azure AI Vision credentials.
-4.  **Run Locally**:
-    ```bash
-    func start
-    ```
-5.  **Deploy**:
-    ```bash
-    func azure functionapp publish <YOUR_FUNCTION_APP_NAME>
-    ```
+---
 
-## 3. Setup DataNexus_Web (Hybrid Portal)
+## 🛠 Tech Stack
 
-1.  **Prerequisites**: Node.js & npm installed.
-2.  **Install Dependencies**:
-    ```bash
-    cd DataNexus_Web
-    npm install
-    ```
-3.  **Environment Variables**:
-    - Create a `.env` file in `DataNexus_Web/` with:
-      - `COSMOS_ENDPOINT`: Your Azure Cosmos DB endpoint.
-      - `COSMOS_KEY`: Your Azure Cosmos DB primary key.
-      - `PORT`: (Optional) Port to run on, defaults to 3000.
-4.  **Run**:
-    ```bash
-    npm start
-    ```
-    - The portal will be available at `http://localhost:3000`.
-    - Routes: `/` (Landing), `/User/dashboard.html` (Contributor), `/Agency/dashboard.html` (Agency).
-    - **Authentication**: Uses real Azure Cosmos DB credentials (SHA256 salted hash).
+| Layer    | Technology                         |
+| -------- | ---------------------------------- |
+| Frontend | HTML, CSS, TailwindCSS, Vanilla JS |
+| Backend  | Node.js 20, Express.js             |
+| Database | Azure Cosmos DB (NoSQL)            |
+| Storage  | Azure Blob Storage                 |
+| AI       | Azure OpenAI (GPT-4o), Vision AI   |
+| Hosting  | Azure App Service (B1 Linux)       |
+| CI/CD    | GitHub Actions                     |
 
-## 4. Architecture Overview
+---
 
-### Frontend
+## 📁 Project Structure
 
-- **Riverpod**: Used for global state management (e.g., user session, upload status).
-- **GoRouter**: Handles Deep Linking and navigation.
-- **Responsive**: `DashboardScreen` uses `LayoutBuilder` to toggle between Mobile (Column) and Web (Row) layouts.
+```
+MData/
+├── server.js          # Express server (all backend logic)
+├── package.json       # Dependencies
+├── index.html         # Landing page
+├── User/              # Contributor portal
+│   ├── login.html
+│   ├── dashboard.html
+│   └── upload_files.html
+├── Agency/            # Agency portal
+│   ├── login.html
+│   ├── dashboard.html
+│   └── marketplace.html
+└── .github/workflows/ # CI/CD
+```
 
-### Backend
+---
 
-- **Blob Trigger**: Starts execution immediately when a file lands in the `uploads/` container.
-- **Azure OpenAI**: Reads text/code files and generates a quality report (QA).
-- **Azure Vision**: Generates tags and captions for images.
-- **Cosmos DB**: Acts as the system of record for metadata and rewards.
+## 🏃 Quick Start
+
+### Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Create .env file with:
+# COSMOS_ENDPOINT=https://...
+# COSMOS_KEY=...
+# AZURE_STORAGE_CONNECTION_STRING=...
+# SMTP_USER=...
+# SMTP_PASS=...
+
+# Run
+node server.js
+```
+
+Open http://localhost:8080
+
+### Deploy to Azure
+
+```bash
+git add .
+git commit -m "Your changes"
+git push origin main
+```
+
+GitHub Actions auto-deploys to Azure App Service.
+
+---
+
+## 🔧 Environment Variables
+
+| Variable                          | Purpose            |
+| --------------------------------- | ------------------ |
+| `COSMOS_ENDPOINT`                 | Cosmos DB URL      |
+| `COSMOS_KEY`                      | Cosmos DB key      |
+| `AZURE_STORAGE_CONNECTION_STRING` | Blob storage       |
+| `AZURE_OPENAI_ENDPOINT`           | GPT-4o service     |
+| `AZURE_OPENAI_KEY`                | GPT-4o key         |
+| `VISION_ENDPOINT`                 | Image analysis     |
+| `VISION_KEY`                      | Vision AI key      |
+| `SMTP_USER`                       | Email (for OTP)    |
+| `SMTP_PASS`                       | Email app password |
+
+---
+
+## 📊 API Endpoints
+
+| Method | Endpoint            | Description    |
+| ------ | ------------------- | -------------- |
+| POST   | `/api/user/signup`  | Create user    |
+| POST   | `/api/user/login`   | User login     |
+| POST   | `/api/upload-sas`   | Get upload URL |
+| POST   | `/api/process-file` | AI analysis    |
+| GET    | `/api/datasets`     | List datasets  |
+
+---
+
+## 🏗 Architecture
+
+```
+User Browser → Azure App Service (Node.js)
+                   ↓
+          ┌───────┴───────┐
+          ↓               ↓
+    Cosmos DB       Blob Storage
+          ↓               ↓
+     Metadata         Files
+          ↓
+    ┌─────┴─────┐
+    ↓           ↓
+GPT-4o      Vision AI
+```
+
+---
+
+## 📝 License
+
+MIT
+
+---
+
+## 👨‍💻 Author
+
+**Rahul Pujari**
+
+- GitHub: [@Rahul-14507](https://github.com/Rahul-14507)
+- Email: pujarirahul.pandu@gmail.com

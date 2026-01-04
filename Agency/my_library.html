@@ -334,7 +334,7 @@
                   >
                 </div>
                 <p id="stat-total-spent" class="text-3xl font-bold text-white">
-                  $0
+                  ₹0
                 </p>
                 <p class="text-xs text-slate-400 mt-2">Total invested</p>
               </div>
@@ -397,20 +397,6 @@
       );
       overlay.addEventListener("click", toggleSidebar);
 
-      // Hover to reveal sidebar
-      let hoverTimeout;
-      document.addEventListener("mousemove", (e) => {
-        if (e.clientX < 20) {
-          clearTimeout(hoverTimeout);
-          hoverTimeout = setTimeout(() => {
-            if (sidebar.classList.contains("-translate-x-full")) {
-              sidebar.classList.remove("-translate-x-full");
-              overlay.classList.remove("hidden");
-            }
-          }, 200);
-        }
-      });
-
       // Load user and cart data
       document.addEventListener("DOMContentLoaded", async () => {
         const userStr = localStorage.getItem("user");
@@ -449,14 +435,22 @@
 
         try {
           const res = await fetch(`/api/agency/purchases?agencyId=${agencyId}`);
-          const purchases = await res.json();
+          const purchaseData = await res.json();
+          let purchases = [];
+
+          if (Array.isArray(purchaseData)) {
+            purchases = purchaseData;
+          } else if (purchaseData.items) {
+            purchases = purchaseData.items;
+          }
 
           // Update stats
           const totalDatasets = purchases.length;
-          const totalSpent = purchases.reduce(
-            (sum, p) => sum + (p.sold_price || 0),
-            0
-          );
+          // Use authoritative totalSpent from API (Orders) if available, otherwise fallback
+          const totalSpent =
+            purchaseData.totalSpent !== undefined
+              ? purchaseData.totalSpent
+              : purchases.reduce((sum, p) => sum + (p.sold_price || 0), 0);
           const avgQuality =
             totalDatasets > 0
               ? (
@@ -471,7 +465,7 @@
             totalDatasets;
           document.getElementById(
             "stat-total-spent"
-          ).textContent = `$${totalSpent.toLocaleString()}`;
+          ).textContent = `₹${totalSpent.toLocaleString()}`;
           document.getElementById(
             "stat-avg-quality"
           ).textContent = `${avgQuality}%`;
@@ -492,7 +486,7 @@
           purchases.forEach((item) => {
             const date = new Date(item.transaction_date).toLocaleDateString();
             const price = item.sold_price
-              ? `$${item.sold_price.toLocaleString()}`
+              ? `₹${item.sold_price.toLocaleString()}`
               : "N/A";
             const quality = item.quality_score || "N/A";
 

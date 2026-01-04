@@ -341,13 +341,6 @@
                       >business</span
                     >
                   </div>
-                  <button
-                    class="absolute bottom-1 right-1 bg-white dark:bg-surface-dark text-slate-700 dark:text-white rounded-full p-2.5 border border-gray-200 dark:border-white/10 shadow-lg hover:text-primary transition-colors z-10"
-                  >
-                    <span class="material-symbols-outlined text-[18px] block"
-                      >edit</span
-                    >
-                  </button>
                 </div>
                 <h2
                   id="card-name"
@@ -761,20 +754,6 @@
       );
       overlay.addEventListener("click", toggleSidebar);
 
-      // Hover to reveal sidebar from edge
-      let hoverTimeout;
-      document.addEventListener("mousemove", (e) => {
-        if (e.clientX < 20) {
-          clearTimeout(hoverTimeout);
-          hoverTimeout = setTimeout(() => {
-            if (sidebar.classList.contains("-translate-x-full")) {
-              sidebar.classList.remove("-translate-x-full");
-              overlay.classList.remove("hidden");
-            }
-          }, 200);
-        }
-      });
-
       // Update cart count
       async function updateCartCount(agencyId) {
         try {
@@ -888,7 +867,7 @@
           const res = await fetch("/api/agency/profile", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ agencyId: user.id, profile }),
+            body: JSON.stringify({ agencyId: user.id, ...profile }),
           });
 
           if (res.ok) {

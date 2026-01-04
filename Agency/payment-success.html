@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Payment Status - MData</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3b82f6",
+              "background-dark": "#0f172a",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .glass-card {
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(34, 197, 94, 0.1) 0px,
+            transparent 50%
+          );
+        background-attachment: fixed;
+      }
+      @keyframes checkmark {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .animate-checkmark {
+        animation: checkmark 0.5s ease-out 0.3s forwards;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-dark font-display antialiased text-white min-h-screen flex items-center justify-center p-4"
+  >
+    <div class="glass-card rounded-2xl p-8 max-w-md w-full text-center">
+      <!-- Loading State -->
+      <div id="loading-state">
+        <div
+          class="w-20 h-20 mx-auto mb-6 rounded-full bg-blue-500/20 flex items-center justify-center"
+        >
+          <span
+            class="material-symbols-outlined text-5xl text-blue-400 animate-pulse"
+            >hourglass_top</span
+          >
+        </div>
+        <h1 class="text-2xl font-bold mb-2">Verifying Payment</h1>
+        <p class="text-slate-400 text-sm">
+          Please wait while we confirm your payment...
+        </p>
+      </div>
+
+      <!-- Success State -->
+      <div id="success-state" class="hidden">
+        <div
+          class="w-20 h-20 mx-auto mb-6 rounded-full bg-emerald-500/20 flex items-center justify-center"
+        >
+          <span
+            class="material-symbols-outlined text-5xl text-emerald-400 animate-checkmark"
+            >check_circle</span
+          >
+        </div>
+        <h1 class="text-2xl font-bold mb-2">Payment Successful!</h1>
+        <p class="text-slate-400 text-sm mb-6">
+          Your datasets have been added to your library.
+        </p>
+        <div
+          id="order-details"
+          class="text-left bg-white/5 rounded-xl p-4 mb-6 text-sm"
+        >
+          <div class="flex justify-between mb-2">
+            <span class="text-slate-400">Order ID</span>
+            <span id="order-id" class="font-medium text-white">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Items</span>
+            <span id="item-count" class="font-medium text-white">-</span>
+          </div>
+        </div>
+        <a
+          href="my_library.html"
+          class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary hover:bg-blue-600 font-semibold text-white transition-colors"
+        >
+          <span class="material-symbols-outlined text-[20px]"
+            >library_books</span
+          >
+          Go to My Library
+        </a>
+      </div>
+
+      <!-- Pending State -->
+      <div id="pending-state" class="hidden">
+        <div
+          class="w-20 h-20 mx-auto mb-6 rounded-full bg-yellow-500/20 flex items-center justify-center"
+        >
+          <span class="material-symbols-outlined text-5xl text-yellow-400"
+            >schedule</span
+          >
+        </div>
+        <h1 class="text-2xl font-bold mb-2">Payment Pending</h1>
+        <p class="text-slate-400 text-sm mb-6">
+          Your payment is being processed. This may take a few minutes.
+        </p>
+        <a
+          href="dashboard.html"
+          class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 font-semibold text-white transition-colors"
+        >
+          Go to Dashboard
+        </a>
+      </div>
+
+      <!-- Failed State -->
+      <div id="failed-state" class="hidden">
+        <div
+          class="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center"
+        >
+          <span class="material-symbols-outlined text-5xl text-red-400"
+            >error</span
+          >
+        </div>
+        <h1 class="text-2xl font-bold mb-2">Payment Failed</h1>
+        <p class="text-slate-400 text-sm mb-6">
+          There was an issue processing your payment. Please try again.
+        </p>
+        <a
+          href="cart.html"
+          class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary hover:bg-blue-600 font-semibold text-white transition-colors"
+        >
+          <span class="material-symbols-outlined text-[20px]"
+            >shopping_cart</span
+          >
+          Return to Cart
+        </a>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get("orderId");
+        const paymentId = urlParams.get("payment_id");
+        const paymentStatus = urlParams.get("payment_status");
+
+        const userStr = localStorage.getItem("user");
+        if (!userStr) {
+          window.location.href = "../index.html";
+          return;
+        }
+        const user = JSON.parse(userStr);
+
+        // Hide loading, show appropriate state
+        const showState = (state) => {
+          document.getElementById("loading-state").classList.add("hidden");
+          document.getElementById("success-state").classList.add("hidden");
+          document.getElementById("pending-state").classList.add("hidden");
+          document.getElementById("failed-state").classList.add("hidden");
+          document.getElementById(`${state}-state`).classList.remove("hidden");
+        };
+
+        // If we have payment_status from payment gateway redirect
+        if (paymentStatus === "Credit") {
+          showState("success");
+          if (orderId) {
+            document.getElementById("order-id").textContent =
+              orderId.substring(0, 20) + "...";
+          }
+          return;
+        } else if (paymentStatus && paymentStatus !== "Credit") {
+          showState("failed");
+          return;
+        }
+
+        // Poll for order status
+        if (orderId) {
+          let attempts = 0;
+          const maxAttempts = 10;
+
+          const checkStatus = async () => {
+            attempts++;
+            try {
+              const res = await fetch(
+                `/api/checkout/status/${orderId}?agencyId=${user.id}`
+              );
+              const data = await res.json();
+
+              if (data.status === "paid") {
+                showState("success");
+                document.getElementById("order-id").textContent =
+                  orderId.substring(0, 20) + "...";
+                document.getElementById("item-count").textContent = `${
+                  data.items?.length || 0
+                } dataset(s)`;
+              } else if (data.status === "failed") {
+                showState("failed");
+              } else if (attempts < maxAttempts) {
+                setTimeout(checkStatus, 2000);
+              } else {
+                showState("pending");
+              }
+            } catch (err) {
+              console.error("Status check error:", err);
+              if (attempts < maxAttempts) {
+                setTimeout(checkStatus, 2000);
+              } else {
+                showState("pending");
+              }
+            }
+          };
+
+          setTimeout(checkStatus, 1000);
+        } else {
+          showState("failed");
+        }
+      });
+    </script>
+  </body>
+</html>

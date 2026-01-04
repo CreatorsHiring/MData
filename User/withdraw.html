@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>MData - Withdraw Funds</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3b82f6",
+              "background-dark": "#0f172a",
+              "surface-dark": "#1e293b",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .glass-card {
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .glass {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(34, 197, 94, 0.1) 0px,
+            transparent 50%
+          );
+        background-attachment: fixed;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-dark font-display antialiased text-white min-h-screen"
+  >
+    <!-- Header -->
+    <header class="glass border-b border-white/5 sticky top-0 z-50">
+      <div
+        class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between"
+      >
+        <a href="dashboard.html" class="flex items-center gap-3">
+          <img src="../MData.png" alt="MData" class="h-8 w-8" />
+          <span class="text-lg font-bold">MData</span>
+        </a>
+        <a
+          href="wallet.html"
+          class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm"
+        >
+          <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+          Back to Wallet
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+      <!-- Balance Card -->
+      <div class="glass-card rounded-2xl p-6 mb-8">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <div>
+            <p class="text-slate-400 text-sm">Available Balance</p>
+            <p
+              id="available-balance"
+              class="text-4xl font-bold text-emerald-400 mt-1"
+            >
+              ₹0.00
+            </p>
+          </div>
+          <div class="flex gap-4 text-sm">
+            <div class="text-center">
+              <p class="text-slate-500">Total Earned</p>
+              <p id="total-earned" class="font-semibold text-white">₹0.00</p>
+            </div>
+            <div class="w-px bg-white/10"></div>
+            <div class="text-center">
+              <p class="text-slate-500">Pending</p>
+              <p id="pending-amount" class="font-semibold text-yellow-400">
+                ₹0.00
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Withdrawal Form -->
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div
+              class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg"
+            >
+              <span class="material-symbols-outlined text-2xl">payments</span>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold">Request Withdrawal</h2>
+              <p class="text-slate-400 text-sm">
+                Minimum ₹100 • 3-5 business days
+              </p>
+            </div>
+          </div>
+
+          <form id="withdraw-form" class="space-y-5">
+            <!-- Amount -->
+            <div>
+              <label class="block text-sm font-medium mb-2">Amount (₹)</label>
+              <div class="relative">
+                <span
+                  class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  >₹</span
+                >
+                <input
+                  id="amount"
+                  type="number"
+                  min="100"
+                  step="1"
+                  placeholder="Enter amount"
+                  class="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                  required
+                />
+              </div>
+              <p class="text-xs text-slate-500 mt-1">
+                Minimum withdrawal: ₹100
+              </p>
+            </div>
+
+            <!-- Payment Method Tabs -->
+            <div>
+              <label class="block text-sm font-medium mb-2"
+                >Payment Method</label
+              >
+              <div class="flex gap-2 p-1 bg-white/5 rounded-xl">
+                <button
+                  type="button"
+                  id="tab-upi"
+                  class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all bg-primary text-white"
+                  onclick="switchTab('upi')"
+                >
+                  UPI
+                </button>
+                <button
+                  type="button"
+                  id="tab-bank"
+                  class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white"
+                  onclick="switchTab('bank')"
+                >
+                  Bank Transfer
+                </button>
+              </div>
+            </div>
+
+            <!-- UPI Fields -->
+            <div id="upi-fields">
+              <label class="block text-sm font-medium mb-2">UPI ID</label>
+              <input
+                id="upi-id"
+                type="text"
+                placeholder="yourname@upi"
+                class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              />
+            </div>
+
+            <!-- Bank Fields -->
+            <div id="bank-fields" class="hidden space-y-4">
+              <div>
+                <label class="block text-sm font-medium mb-2"
+                  >Account Holder Name</label
+                >
+                <input
+                  id="account-name"
+                  type="text"
+                  placeholder="As per bank records"
+                  class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2"
+                  >Account Number</label
+                >
+                <input
+                  id="bank-account"
+                  type="text"
+                  placeholder="Enter account number"
+                  class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">IFSC Code</label>
+                <input
+                  id="ifsc"
+                  type="text"
+                  placeholder="e.g. SBIN0001234"
+                  class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none uppercase"
+                />
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              id="submit-btn"
+              class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"
+            >
+              <span class="material-symbols-outlined text-[20px]">send</span>
+              Request Withdrawal
+            </button>
+          </form>
+        </div>
+
+        <!-- Withdrawal History -->
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary"
+                >history</span
+              >
+              Withdrawal History
+            </h2>
+          </div>
+
+          <div id="withdrawals-list" class="space-y-3">
+            <div class="text-center py-8 text-slate-500">
+              <span
+                class="material-symbols-outlined text-4xl mb-2 opacity-50 block"
+                >account_balance_wallet</span
+              >
+              No withdrawals yet
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div
+      id="toast-container"
+      class="fixed bottom-6 right-6 z-50 space-y-3"
+    ></div>
+
+    <script>
+      let currentTab = "upi";
+      let user = null;
+
+      function switchTab(tab) {
+        currentTab = tab;
+        const upiTab = document.getElementById("tab-upi");
+        const bankTab = document.getElementById("tab-bank");
+        const upiFields = document.getElementById("upi-fields");
+        const bankFields = document.getElementById("bank-fields");
+
+        if (tab === "upi") {
+          upiTab.className =
+            "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all bg-primary text-white";
+          bankTab.className =
+            "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
+          upiFields.classList.remove("hidden");
+          bankFields.classList.add("hidden");
+        } else {
+          bankTab.className =
+            "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all bg-primary text-white";
+          upiTab.className =
+            "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
+          bankFields.classList.remove("hidden");
+          upiFields.classList.add("hidden");
+        }
+      }
+
+      function showToast(message, type = "info") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        const bgColor =
+          type === "success"
+            ? "bg-emerald-500/90"
+            : type === "error"
+            ? "bg-red-500/90"
+            : "bg-blue-500/90";
+        const icon =
+          type === "success"
+            ? "check_circle"
+            : type === "error"
+            ? "error"
+            : "info";
+
+        toast.className = `${bgColor} backdrop-blur-lg text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-fade-in min-w-[280px]`;
+        toast.innerHTML = `
+          <span class="material-symbols-outlined">${icon}</span>
+          <span class="font-medium">${message}</span>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateX(100px)";
+          toast.style.transition = "all 0.3s ease";
+          setTimeout(() => toast.remove(), 300);
+        }, 4000);
+      }
+
+      async function loadBalance() {
+        try {
+          const res = await fetch(`/api/user/balance?userId=${user.id}`);
+          const data = await res.json();
+
+          document.getElementById(
+            "available-balance"
+          ).textContent = `₹${data.availableBalance}`;
+          document.getElementById(
+            "total-earned"
+          ).textContent = `₹${data.totalEarnings}`;
+          document.getElementById(
+            "pending-amount"
+          ).textContent = `₹${data.pendingWithdrawals}`;
+        } catch (err) {
+          console.error("Balance error:", err);
+        }
+      }
+
+      async function loadWithdrawals() {
+        try {
+          const res = await fetch(`/api/user/withdrawals?userId=${user.id}`);
+          const data = await res.json();
+
+          const container = document.getElementById("withdrawals-list");
+
+          if (!data.withdrawals || data.withdrawals.length === 0) {
+            container.innerHTML = `
+              <div class="text-center py-8 text-slate-500">
+                <span class="material-symbols-outlined text-4xl mb-2 opacity-50 block">account_balance_wallet</span>
+                No withdrawals yet
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = data.withdrawals
+            .map((w) => {
+              const date = new Date(w.createdAt).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              });
+              const statusColors = {
+                pending: "bg-yellow-500/20 text-yellow-400",
+                processing: "bg-blue-500/20 text-blue-400",
+                completed: "bg-emerald-500/20 text-emerald-400",
+                rejected: "bg-red-500/20 text-red-400",
+              };
+              const statusIcons = {
+                pending: "schedule",
+                processing: "sync",
+                completed: "check_circle",
+                rejected: "cancel",
+              };
+
+              return `
+              <div class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg ${
+                    statusColors[w.status] || "bg-slate-500/20"
+                  } flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[20px]">${
+                      statusIcons[w.status] || "pending"
+                    }</span>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-white">₹${w.amount}</p>
+                    <p class="text-xs text-slate-500">${
+                      w.upiId || w.bankAccount || "N/A"
+                    } • ${date}</p>
+                  </div>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-medium capitalize ${
+                  statusColors[w.status] || "bg-slate-500/20 text-slate-400"
+                }">
+                  ${w.status}
+                </span>
+              </div>
+            `;
+            })
+            .join("");
+        } catch (err) {
+          console.error("Withdrawals error:", err);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const userStr = localStorage.getItem("user");
+        if (!userStr) {
+          window.location.href = "../index.html";
+          return;
+        }
+        user = JSON.parse(userStr);
+
+        loadBalance();
+        loadWithdrawals();
+      });
+
+      document
+        .getElementById("withdraw-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const amount = parseFloat(document.getElementById("amount").value);
+          const upiId = document.getElementById("upi-id").value.trim();
+          const bankAccount = document
+            .getElementById("bank-account")
+            .value.trim();
+          const ifsc = document
+            .getElementById("ifsc")
+            .value.trim()
+            .toUpperCase();
+          const accountName = document
+            .getElementById("account-name")
+            .value.trim();
+
+          if (amount < 100) {
+            showToast("Minimum withdrawal is ₹100", "error");
+            return;
+          }
+
+          if (currentTab === "upi" && !upiId) {
+            showToast("Please enter your UPI ID", "error");
+            return;
+          }
+
+          if (currentTab === "bank" && (!bankAccount || !ifsc)) {
+            showToast("Please enter bank account details", "error");
+            return;
+          }
+
+          const btn = document.getElementById("submit-btn");
+          btn.disabled = true;
+          btn.innerHTML =
+            '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Processing...';
+
+          try {
+            const res = await fetch("/api/user/withdraw-request", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: user.id,
+                amount,
+                upiId: currentTab === "upi" ? upiId : null,
+                bankAccount: currentTab === "bank" ? bankAccount : null,
+                ifsc: currentTab === "bank" ? ifsc : null,
+                accountName: currentTab === "bank" ? accountName : null,
+              }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+              showToast(data.message, "success");
+              document.getElementById("amount").value = "";
+              document.getElementById("upi-id").value = "";
+              document.getElementById("bank-account").value = "";
+              document.getElementById("ifsc").value = "";
+              document.getElementById("account-name").value = "";
+              loadBalance();
+              loadWithdrawals();
+            } else {
+              showToast(data.error || "Withdrawal failed", "error");
+            }
+          } catch (err) {
+            console.error("Withdrawal error:", err);
+            showToast("Network error. Please try again.", "error");
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML =
+              '<span class="material-symbols-outlined text-[20px]">send</span> Request Withdrawal';
+          }
+        });
+    </script>
+  </body>
+</html>

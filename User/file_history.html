@@ -527,11 +527,7 @@
             e.stopPropagation();
             toggleSidebar();
         });
-        btn.addEventListener("mouseenter", () => {
-             if (sidebar && sidebar.classList.contains("-translate-x-full")) {
-                 toggleSidebar();
-             }
-        });
+
       });
       overlay.addEventListener("click", toggleSidebar);
 
@@ -690,7 +686,7 @@
                      statusBadge = `<span class="bg-yellow-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm animate-pulse">Pending</span>`;
                 }
 
-                const earningsDisplay = showEarnings ? `+$${(file.payout * 0.8 || 0).toFixed(2)}` : "--";
+                const earningsDisplay = showEarnings ? `+₹${(file.payout * 0.8 || 0).toFixed(2)}` : "--";
                 const earningsClass = showEarnings ? "text-green-600 dark:text-green-400" : "text-slate-400";
                 const qualityScore = file.quality_score ? `${file.quality_score}/100` : "--";
 

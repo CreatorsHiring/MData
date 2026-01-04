@@ -506,27 +506,9 @@
           e.stopPropagation();
           toggleSidebar();
         });
-        // Reveal on hover
-        btn.addEventListener("mouseenter", openSidebar);
       });
-
-      // Close when mouse leaves the sidebar area (optional but good for UX if opened by hover)
-      sidebar.addEventListener("mouseleave", closeSidebar);
 
       overlay.addEventListener("click", closeSidebar);
-
-      // Hover to reveal sidebar from edge
-      let hoverTimeout;
-      document.addEventListener("mousemove", (e) => {
-        if (e.clientX < 20) {
-          clearTimeout(hoverTimeout);
-          hoverTimeout = setTimeout(() => {
-            if (sidebar.classList.contains("-translate-x-full")) {
-              openSidebar();
-            }
-          }, 200);
-        }
-      });
 
       // --- Real Data Logic ---
       let allCategories = [];

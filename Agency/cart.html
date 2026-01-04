@@ -15,6 +15,7 @@
       rel="stylesheet"
     />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -380,7 +381,7 @@
                       >
                       <span
                         class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-600" id="cart-total"
-                        >$0.00</span
+                        >₹0.00</span>
                       >
                     </div>
                   </div>
@@ -470,6 +471,18 @@
               <h3 id="confirm-title" class="text-xl font-bold text-white">Confirm Checkout</h3>
               <p id="confirm-message" class="text-slate-400 text-sm">Are you sure you want to proceed?</p>
             </div>
+          </div>
+          <!-- Phone Number Input for Payment -->
+          <div id="checkout-phone-section" class="mb-4">
+            <label class="block text-sm font-medium text-slate-300 mb-2">Mobile Number (for payment)</label>
+            <input 
+              id="checkout-phone" 
+              type="tel" 
+              placeholder="10-digit mobile number"
+              maxlength="10"
+              class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+            />
+
           </div>
           <div class="flex gap-3 mt-6">
             <button onclick="closeConfirmModal()" class="flex-1 py-3 px-4 rounded-xl bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 transition-all">
@@ -605,19 +618,7 @@
       );
       overlay.addEventListener("click", toggleSidebar);
 
-      // Hover to reveal sidebar from edge
-      let hoverTimeout;
-      document.addEventListener("mousemove", (e) => {
-        if (e.clientX < 20) {
-          clearTimeout(hoverTimeout);
-          hoverTimeout = setTimeout(() => {
-            if (sidebar.classList.contains("-translate-x-full")) {
-              sidebar.classList.remove("-translate-x-full");
-              overlay.classList.remove("hidden");
-            }
-          }, 200);
-        }
-      });
+
 
       // --- Cart Logic ---
       let cartItems = [];
@@ -740,49 +741,130 @@
             return;
           }
           
-          // Feature coming soon - payment gateway integration pending
-          showToast("Feature Coming Soon! Payment gateway integration is in progress.", "info");
-          return;
-          
           const userStr = localStorage.getItem("user");
-          const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo", role: "agency" };
+          const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo", name: "Demo User", email: "demo@example.com" };
 
           const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0), 0);
           const total = subtotal + PROCESSING_FEE;
 
           showConfirmModal(
             'Confirm Checkout',
-            `You are about to purchase ${cartItems.length} bundle(s) for ₹${total.toLocaleString()}. Proceed?`,
+            `You are about to purchase ${cartItems.length} bundle(s) for ₹${total.toLocaleString()}. You'll be redirected to complete payment.`,
             async () => {
+              // Get phone from input
+              const phoneInput = document.getElementById('checkout-phone');
+              const phone = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
+              
+              if (phone.length !== 10) {
+                showToast("Please enter a valid 10-digit mobile number", "error");
+                return;
+              }
+
               try {
-                const res = await fetch('/api/market/checkout', {
+                // Show loading
+                showToast("Creating payment...", "info");
+                closeConfirmModal();
+
+                // Get cart item IDs
+                const cartItemIds = cartItems.map(item => item.id || item.category);
+
+                const res = await fetch('/api/checkout/create-payment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                        agencyId: user.id,
-                       items: cartItems.map(c => ({ category: c.category })) 
+                       cartItems: cartItemIds,
+                       totalAmount: total,
+                       email: user.email || 'customer@example.com',
+                       phone: phone,
+                       name: user.name || 'Customer'
                     })
                 });
 
                 const data = await res.json();
                 
-                if(res.ok) {
-                    // Clear cloud cart
-                    await fetch(`/api/agency/cart?agencyId=${user.id}`, { method: 'DELETE' });
-                    cartItems = [];
-                    renderCart();
-                    showResultModal(
-                      'success',
-                      'Checkout Successful!',
-                      data.message || 'Your datasets have been purchased and are now available in your library.',
-                      'View My Library',
-                      () => { window.location.href = 'my_library.html'; }
-                    );
+                if(res.ok && data.success) {
+                    // Open Razorpay Checkout Modal
+                    const options = {
+                      key: data.razorpayKeyId,
+                      amount: data.amount,
+                      currency: data.currency,
+                      name: data.name,
+                      description: data.description,
+                      order_id: data.razorpayOrderId,
+                      prefill: data.prefill,
+                      theme: {
+                        color: "#3b82f6"
+                      },
+                      handler: async function(response) {
+                        // Payment successful - verify on server
+                        showToast("Verifying payment...", "info");
+                        try {
+                          const verifyRes = await fetch('/api/checkout/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              razorpay_order_id: response.razorpay_order_id,
+                              razorpay_payment_id: response.razorpay_payment_id,
+                              razorpay_signature: response.razorpay_signature,
+                              orderId: data.orderId
+                            })
+                          });
+                          
+                          const verifyData = await verifyRes.json();
+                          
+                          if(verifyRes.ok && verifyData.success) {
+                            // Clear local cart
+                            cartItems = [];
+                            renderCart();
+                            showResultModal(
+                              'success',
+                              'Payment Successful!',
+                              'Your datasets have been purchased and are now available in your library.',
+                              'View My Library',
+                              () => { window.location.href = 'my_library.html'; }
+                            );
+                          } else {
+                            showResultModal(
+                              'error',
+                              'Verification Failed',
+                              verifyData.error || 'Payment could not be verified. Please contact support.',
+                              'Close'
+                            );
+                          }
+                        } catch (verifyErr) {
+                          console.error("Verify error:", verifyErr);
+                          showResultModal(
+                            'error',
+                            'Verification Error',
+                            'Could not verify payment. Please contact support if payment was deducted.',
+                            'Close'
+                          );
+                        }
+                      },
+                      modal: {
+                        ondismiss: function() {
+                          showToast("Payment cancelled", "info");
+                        }
+                      }
+                    };
+                    
+                    const rzp = new Razorpay(options);
+                    rzp.on('payment.failed', function(response) {
+                      console.error("Payment failed:", response.error);
+                      showResultModal(
+                        'error',
+                        'Payment Failed',
+                        response.error.description || 'Payment could not be completed. Please try again.',
+                        'Try Again'
+                      );
+                    });
+                    rzp.open();
                 } else {
                     showResultModal(
                       'error',
-                      'Checkout Failed',
-                      data.error || `Error ${res.status}: Unknown error occurred.`,
+                      'Payment Failed',
+                      data.error || 'Could not create payment. Please try again.',
                       'Try Again'
                     );
                 }
