@@ -121,7 +121,7 @@ User Browser → Azure App Service (Node.js)
           ↓
     ┌─────┴─────┐
     ↓           ↓
-GPT-4o      Vision AI
+GPT-4o      Vertex AI
 ```
 
 ---
