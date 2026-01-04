@@ -90,7 +90,7 @@ GitHub Actions auto-deploys to Azure App Service.
 | `AZURE_OPENAI_ENDPOINT`           | GPT-4o service     |
 | `AZURE_OPENAI_KEY`                | GPT-4o key         |
 | `VISION_ENDPOINT`                 | Image analysis     |
-| `VISION_KEY`                      | Vision AI key      |
+| `Vertex_AI`                       | Vertex AI          |
 | `SMTP_USER`                       | Email (for OTP)    |
 | `SMTP_PASS`                       | Email app password |
 
