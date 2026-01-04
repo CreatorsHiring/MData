@@ -23,7 +23,7 @@ A marketplace where data contributors earn rewards for quality datasets, and AI 
 | -------- | ---------------------------------- |
 | Frontend | HTML, CSS, TailwindCSS, Vanilla JS |
 | Backend  | Node.js 20, Express.js             |
-| Database | Azure Cosmos DB (NoSQL)            |
+| Database | Firestore DB (NoSQL)            |
 | Storage  | Azure Blob Storage                 |
 | AI       | Azure OpenAI (GPT-4o), Vision AI   |
 | Hosting  | Azure App Service (B1 Linux)       |
