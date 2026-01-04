@@ -632,7 +632,7 @@ app.post("/api/market/purchase", async (req, res) => {
       item.payout = itemPayout;
       item.sold_price = itemPayout; // Agency view
 
-      await container.items.upsert(item);
+      await submissionsCollection.doc(item.id).set(item, { merge: true });
     }
 
     res.json({
@@ -785,11 +785,11 @@ app.post("/api/signup", async (req, res) => {
   const { email, password, name, role } = req.body;
 
   // Determine which container to use based on role
-  const targetContainer =
-    role === "agency" ? agenciesContainer : usersContainer;
+  const targetCollection =
+    role === "agency" ? agenciesCollection : usersCollection;
   const accountType = role === "agency" ? "agency" : "contributor";
 
-  if (!targetContainer) {
+  if (!targetCollection) {
     return res
       .status(500)
       .json({ success: false, error: "Database not connected" });
