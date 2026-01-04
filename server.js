@@ -1,7 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
-const { CosmosClient } = require("@azure/cosmos");
+const admin = require("firebase-admin");
+const { getFirestore } = require("firebase-admin/firestore");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const Razorpay = require("razorpay");
@@ -227,203 +228,41 @@ app.get("/refund", (req, res) =>
   res.sendFile(path.join(__dirname, "refund.html"))
 );
 
-// ========== SESSION & PASSPORT CONFIGURATION ==========
-app.use(
-  session({
-    secret:
-      process.env.SESSION_SECRET || "mdata-oauth-secret-key-change-in-prod",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    },
-  })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Passport serialize/deserialize
-passport.serializeUser((user, done) => {
-  done(null, { id: user.id, role: user.role });
-});
-
-passport.deserializeUser(async (data, done) => {
+// TEMP: Firestore connectivity test
+app.get("/api/test-firestore", async (req, res) => {
   try {
-    const container =
-      data.role === "agency" ? agenciesContainer : usersContainer;
-    if (!container) return done(null, false);
+    const testDoc = {
+      message: "Hello Firestore",
+      created_at: new Date().toISOString(),
+      source: "cloud-shell-test",
+    };
 
-    const { resource } = await container.item(data.id, data.id).read();
-    done(null, resource);
+    await submissionsCollection.add(testDoc);
+
+    res.json({
+      status: "success",
+      note: "Firestore write successful",
+      data: testDoc,
+    });
   } catch (err) {
-    done(err, null);
+    console.error("Firestore test failed:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Google OAuth Strategy
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  passport.use(
-    new GoogleStrategy(
-      {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL:
-          (process.env.BASE_URL || "http://localhost:3000") +
-          "/auth/google/callback",
-        passReqToCallback: true,
-      },
-      async (req, accessToken, refreshToken, profile, done) => {
-        try {
-          const email = profile.emails[0].value;
-          const role = req.session.oauthRole || "user";
-          const container =
-            role === "agency" ? agenciesContainer : usersContainer;
 
-          // Check if user exists
-          const { resources } = await container.items
-            .query({
-              query: "SELECT * FROM c WHERE c.email = @email",
-              parameters: [{ name: "@email", value: email }],
-            })
-            .fetchAll();
-
-          if (resources.length > 0) {
-            // User exists, log them in
-            return done(null, { ...resources[0], role });
-          }
-
-          // Create new user
-          const newUser = {
-            id: crypto.randomUUID(),
-            name: profile.displayName,
-            email: email,
-            oauth_provider: "google",
-            oauth_id: profile.id,
-            role: role === "agency" ? "agency" : "contributor",
-            balance: 0.0,
-            joined_date: new Date().toISOString(),
-          };
-
-          await container.items.create(newUser);
-          console.log(
-            `OAuth: Created new ${role} account for ${email} via Google`
-          );
-          return done(null, { ...newUser, role });
-        } catch (err) {
-          console.error("Google OAuth error:", err);
-          return done(err, null);
-        }
-      }
-    )
-  );
-  console.log("Google OAuth strategy configured.");
+// Google Firestore Configuration
+// Ensure GOOGLE_APPLICATION_CREDENTIALS is set in environment or default creds are available
+if (!admin.apps.length) {
+  admin.initializeApp();
 }
 
-// GitHub OAuth Strategy
-if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-  passport.use(
-    new GitHubStrategy(
-      {
-        clientID: process.env.GITHUB_CLIENT_ID,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL:
-          (process.env.BASE_URL || "http://localhost:3000") +
-          "/auth/github/callback",
-        scope: ["user:email"],
-        passReqToCallback: true,
-      },
-      async (req, accessToken, refreshToken, profile, done) => {
-        try {
-          const email =
-            profile.emails && profile.emails[0]
-              ? profile.emails[0].value
-              : `${profile.username}@github.local`;
-          const role = req.session.oauthRole || "user";
-          const container =
-            role === "agency" ? agenciesContainer : usersContainer;
+const firestore = getFirestore();
+const usersCollection = firestore.collection("users");
+const agenciesCollection = firestore.collection("agencies");
+const submissionsCollection = firestore.collection("submissions");
 
-          // Check if user exists
-          const { resources } = await container.items
-            .query({
-              query: "SELECT * FROM c WHERE c.email = @email",
-              parameters: [{ name: "@email", value: email }],
-            })
-            .fetchAll();
-
-          if (resources.length > 0) {
-            return done(null, { ...resources[0], role });
-          }
-
-          // Create new user
-          const newUser = {
-            id: crypto.randomUUID(),
-            name: profile.displayName || profile.username,
-            email: email,
-            oauth_provider: "github",
-            oauth_id: profile.id,
-            role: role === "agency" ? "agency" : "contributor",
-            balance: 0.0,
-            joined_date: new Date().toISOString(),
-          };
-
-          await container.items.create(newUser);
-          console.log(
-            `OAuth: Created new ${role} account for ${email} via GitHub`
-          );
-          return done(null, { ...newUser, role });
-        } catch (err) {
-          console.error("GitHub OAuth error:", err);
-          return done(err, null);
-        }
-      }
-    )
-  );
-  console.log("GitHub OAuth strategy configured.");
-}
-
-// Azure Cosmos DB Configuration
-const endpoint = process.env.COSMOS_ENDPOINT;
-const key = process.env.COSMOS_KEY;
-const databaseId = "mdatadb";
-
-let database;
-let usersContainer; // For contributor accounts
-let agenciesContainer; // For agency/buyer accounts
-
-async function initCosmos() {
-  try {
-    const client = new CosmosClient({ endpoint, key });
-
-    // Get or create database
-    const { database: db } = await client.databases.createIfNotExists({
-      id: databaseId,
-    });
-    database = db;
-
-    // Get or create Users container (for contributors)
-    const { container: usersC } = await database.containers.createIfNotExists({
-      id: "Users",
-      partitionKey: { paths: ["/id"] },
-    });
-    usersContainer = usersC;
-    console.log(`Connected to Azure Cosmos DB: ${databaseId} > Users`);
-
-    // Get or create Agencies container (for buyers)
-    const { container: agenciesC } =
-      await database.containers.createIfNotExists({
-        id: "Agencies",
-        partitionKey: { paths: ["/id"] },
-      });
-    agenciesContainer = agenciesC;
-    console.log(`Connected to Azure Cosmos DB: ${databaseId} > Agencies`);
-  } catch (err) {
-    console.error("Failed to connect to Cosmos DB:", err.message);
-  }
-}
-
-initCosmos();
+console.log("Connected to Google Cloud Firestore");
 
 // Azure Storage Configuration
 const {
@@ -572,18 +411,15 @@ app.get("/api/stats", async (req, res) => {
   }
 
   try {
-    const submissionsContainer = database.container("Submissions");
-    // Ensure container exists logic is handled in Function App usually, but for reading we assume it exists or fail gracefully
+    const snapshot = await submissionsCollection
+      .where("userId", "==", userId)
+      .orderBy("upload_timestamp", "desc")
+      .get();
 
-    const querySpec = {
-      query:
-        "SELECT c.id, c.payout, c.quality_score, c.original_name, c.upload_timestamp, c.sold_to, c.transaction_date FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
-      parameters: [{ name: "@userId", value: userId }],
-    };
-
-    const { resources: items } = await submissionsContainer.items
-      .query(querySpec)
-      .fetchAll();
+    const items = [];
+    snapshot.forEach((doc) => {
+      items.push({ id: doc.id, ...doc.data() });
+    });
 
     let totalEarnings = 0.0;
     let totalScore = 0;
@@ -675,15 +511,12 @@ app.get("/api/files", async (req, res) => {
   // Actually, the Stats API returns history, so we can probably reuse that or just specific query.
   // Let's implement a specific one for the history page to potentially support pagination later.
   try {
-    const submissionsContainer = database.container("Submissions");
-    const querySpec = {
-      query:
-        "SELECT * FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
-      parameters: [{ name: "@userId", value: userId }],
-    };
-    const { resources: items } = await submissionsContainer.items
-      .query(querySpec)
-      .fetchAll();
+    const snapshot = await submissionsCollection
+      .where("userId", "==", userId)
+      .orderBy("upload_timestamp", "desc")
+      .get();
+    const items = [];
+    snapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
     res.json(items);
   } catch (err) {
     console.error("Files Error:", err);
@@ -701,28 +534,18 @@ app.delete("/api/files/:fileId", async (req, res) => {
   }
 
   try {
-    const submissionsContainer = database.container("Submissions");
+    // Fetch document from Firestore
+    const docRef = submissionsCollection.doc(fileId);
+    const doc = await docRef.get();
 
-    // Query for the file by id and userId to get the item and verify ownership
-    const querySpec = {
-      query: "SELECT * FROM c WHERE c.id = @fileId AND c.userId = @userId",
-      parameters: [
-        { name: "@fileId", value: fileId },
-        { name: "@userId", value: userId },
-      ],
-    };
-
-    const { resources: items } = await submissionsContainer.items
-      .query(querySpec)
-      .fetchAll();
-
-    if (!items || items.length === 0) {
+    if (!doc.exists || doc.data().userId !== userId) {
       return res.status(404).json({
         error: "File not found or you don't have permission to delete it",
       });
     }
 
-    const item = items[0];
+    const item = { id: doc.id, ...doc.data() };
+
 
     // Check if already sold
     if (item.sold_to) {
@@ -731,8 +554,8 @@ app.delete("/api/files/:fileId", async (req, res) => {
         .json({ error: "Cannot delete a file that has already been sold" });
     }
 
-    // Delete the item from Cosmos DB - use userId as partition key
-    await submissionsContainer.item(fileId, userId).delete();
+    // Delete the item from Firestore
+    await docRef.delete();
 
     // Optionally delete from Blob Storage as well
     if (blobServiceClient && item.blob_url) {
@@ -759,14 +582,9 @@ app.delete("/api/files/:fileId", async (req, res) => {
 // API: Market Summaries
 app.get("/api/market/summaries", async (req, res) => {
   try {
-    const container = database.container("Submissions");
-    const querySpec = {
-      query: "SELECT c.market_category, c.quality_score, c.sold_to FROM c",
-    };
-
-    const { resources: items } = await container.items
-      .query(querySpec)
-      .fetchAll();
+    const snapshot = await submissionsCollection.select('market_category', 'quality_score', 'sold_to').get();
+    const items = [];
+    snapshot.forEach(doc => items.push(doc.data()));
 
     const marketStats = {};
     items.forEach((item) => {
@@ -805,30 +623,13 @@ app.get("/api/agency/purchases", async (req, res) => {
     const agencyId = req.query.agencyId;
     if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
-    const container = database.container("Submissions");
-    const querySpec = {
-      query:
-        "SELECT c.id, c.original_name, c.market_category, c.sold_price, c.transaction_date, c.quality_score FROM c WHERE c.sold_to = @agencyId ORDER BY c.transaction_date DESC",
-      parameters: [{ name: "@agencyId", value: agencyId }],
-    };
-
-    const { resources: items } = await container.items
-      .query(querySpec)
-      .fetchAll();
-
-    // Calculate Total Spend from Orders (more accurate than summing items)
-    const ordersContainer = await getOrdersContainer();
-    const { resources: orders } = await ordersContainer.items
-      .query({
-        query:
-          "SELECT c.totalAmount FROM c WHERE c.agencyId = @agencyId AND c.status = 'paid'",
-        parameters: [{ name: "@agencyId", value: agencyId }],
-      })
-      .fetchAll();
-
-    const totalSpent = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-
-    res.json({ items, totalSpent });
+    const snapshot = await submissionsCollection
+      .where("sold_to", "==", agencyId)
+      .orderBy("transaction_date", "desc")
+      .get();
+    const items = [];
+    snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+    res.json(items);
   } catch (err) {
     console.error("Agency Purchases Error:", err);
     res.status(500).json({ error: err.message });
@@ -842,16 +643,13 @@ app.post("/api/market/purchase", async (req, res) => {
     if (!category || !agencyId)
       return res.status(400).json({ error: "Missing category or agencyId" });
 
-    const container = database.container("Submissions");
-
     // 1. Fetch Items in Category
-    const querySpec = {
-      query: "SELECT * FROM c WHERE c.market_category = @category",
-      parameters: [{ name: "@category", value: category }],
-    };
-    const { resources: items } = await container.items
-      .query(querySpec)
-      .fetchAll();
+    const snapshot = await submissionsCollection
+      .where("market_category", "==", category)
+      .get();
+
+    const items = [];
+    snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
 
     // 2. Filter Unsold
     const unsoldItems = items.filter((i) => !i.sold_to);
@@ -887,7 +685,7 @@ app.post("/api/market/purchase", async (req, res) => {
       item.payout = itemPayout;
       item.sold_price = itemPayout; // Agency view
 
-      await container.items.upsert(item);
+      await submissionsCollection.doc(item.id).set(item, { merge: true });
     }
 
     res.json({
@@ -909,7 +707,6 @@ app.post("/api/market/checkout", async (req, res) => {
     if (!items || !Array.isArray(items) || !agencyId)
       return res.status(400).json({ error: "Invalid checkout data" });
 
-    const container = database.container("Submissions");
     let totalPurchased = 0;
     let totalCost = 0;
 
@@ -917,13 +714,13 @@ app.post("/api/market/checkout", async (req, res) => {
       const category = cartItem.category;
 
       // 1. Fetch Items
-      const querySpec = {
-        query: "SELECT * FROM c WHERE c.market_category = @category",
-        parameters: [{ name: "@category", value: category }],
-      };
-      const { resources: allItems } = await container.items
-        .query(querySpec)
-        .fetchAll();
+      const snapshot = await submissionsCollection
+        .where("market_category", "==", category)
+        .get();
+      const allItems = [];
+      snapshot.forEach((doc) =>
+        allItems.push({ id: doc.id, ...doc.data() })
+      );
       const unsoldItems = allItems.filter((i) => !i.sold_to);
 
       if (unsoldItems.length > 0) {
@@ -949,7 +746,7 @@ app.post("/api/market/checkout", async (req, res) => {
               : batchValue / count;
           item.sold_price = payout;
           item.payout = payout;
-          await container.items.upsert(item);
+          await submissionsCollection.doc(item.id).set(item, { merge: true });
         }
       }
     }
@@ -968,30 +765,25 @@ app.post("/api/market/checkout", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const { email, password, role } = req.body;
 
-  // Determine which container to use based on role
-  const targetContainer =
-    role === "agency" ? agenciesContainer : usersContainer;
+  // Determine which collection to use based on role
+  const targetCollection =
+    role === "agency" ? agenciesCollection : usersCollection;
   const accountType = role === "agency" ? "agency" : "user";
 
-  if (!targetContainer) {
+  if (!targetCollection) {
     return res
       .status(500)
       .json({ success: false, error: "Database not connected" });
   }
 
   try {
-    // Query account by email in the appropriate container
-    const querySpec = {
-      query: "SELECT * FROM c WHERE c.email = @email",
-      parameters: [{ name: "@email", value: email }],
-    };
+    // Query account by email
+    const snapshot = await targetCollection
+      .where("email", "==", email)
+      .limit(1)
+      .get();
 
-    const { resources: items } = await targetContainer.items
-      .query(querySpec)
-      .fetchAll();
-
-    if (items.length === 0) {
-      // Account not found in the target container
+    if (snapshot.empty) {
       const errorMessage =
         role === "agency"
           ? "No agency account found with this email. Please create an agency account to access the marketplace."
@@ -1005,7 +797,8 @@ app.post("/api/login", async (req, res) => {
       });
     }
 
-    const user = items[0];
+    const doc = snapshot.docs[0];
+    const user = { id: doc.id, ...doc.data() };
 
     // Verify Password
     const inputHash = hashPassword(password, user.salt);
@@ -1016,8 +809,7 @@ app.post("/api/login", async (req, res) => {
     }
 
     console.log(
-      `${accountType.charAt(0).toUpperCase() + accountType.slice(1)} ${
-        user.name
+      `${accountType.charAt(0).toUpperCase() + accountType.slice(1)} ${user.name
       } logged in successfully.`
     );
 
@@ -1046,11 +838,11 @@ app.post("/api/signup", async (req, res) => {
   const { email, password, name, role } = req.body;
 
   // Determine which container to use based on role
-  const targetContainer =
-    role === "agency" ? agenciesContainer : usersContainer;
+  const targetCollection =
+    role === "agency" ? agenciesCollection : usersCollection;
   const accountType = role === "agency" ? "agency" : "contributor";
 
-  if (!targetContainer) {
+  if (!targetCollection) {
     return res
       .status(500)
       .json({ success: false, error: "Database not connected" });
@@ -1062,11 +854,9 @@ app.post("/api/signup", async (req, res) => {
       query: "SELECT * FROM c WHERE c.email = @email",
       parameters: [{ name: "@email", value: email }],
     };
-    const { resources: existing } = await targetContainer.items
-      .query(querySpec)
-      .fetchAll();
+    const existing = await targetCollection.where("email", "==", email).get();
 
-    if (existing.length > 0) {
+    if (!existing.empty) {
       const errorMessage =
         role === "agency"
           ? "An agency account already exists with this email. Please sign in instead."
@@ -1092,10 +882,9 @@ app.post("/api/signup", async (req, res) => {
       joined_date: new Date().toISOString(),
     };
 
-    await targetContainer.items.create(newAccount);
+    await targetCollection.doc(newAccount.id).set(newAccount);
     console.log(
-      `${accountType.charAt(0).toUpperCase() + accountType.slice(1)} ${
-        newAccount.name
+      `${accountType.charAt(0).toUpperCase() + accountType.slice(1)} ${newAccount.name
       } created in ${role === "agency" ? "Agencies" : "Users"} container.`
     );
 
@@ -1126,9 +915,8 @@ app.get("/api/agency/cart", async (req, res) => {
     const agencyId = req.query.agencyId;
     if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
+    const doc = await agenciesCollection.doc(agencyId).get();
+    const agency = doc.exists ? doc.data() : null;
 
     if (!agency) {
       return res.json({ cart: [] });
@@ -1154,10 +942,11 @@ app.post("/api/agency/cart", async (req, res) => {
     // Get current agency
     let agency;
     try {
-      const { resource } = await agenciesContainer
-        .item(agencyId, agencyId)
-        .read();
-      agency = resource;
+      const doc = await agenciesCollection.doc(agencyId).get();
+      if (!doc.exists) {
+        return res.status(404).json({ error: "Agency not found" });
+      }
+      agency = doc.data();
     } catch (e) {
       if (e.code === 404) {
         return res.status(404).json({ error: "Agency not found" });
@@ -1183,7 +972,7 @@ app.post("/api/agency/cart", async (req, res) => {
       addedAt: new Date().toISOString(),
     });
 
-    await agenciesContainer.items.upsert(agency);
+    await agenciesCollection.doc(agencyId).set(agency, { merge: true });
     res.json({ success: true, cart: agency.cart });
   } catch (err) {
     console.error("Add to Cart Error:", err);
@@ -1198,9 +987,8 @@ app.delete("/api/agency/cart/:itemId", async (req, res) => {
     const itemId = req.params.itemId;
     if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
+    const doc = await agenciesCollection.doc(agencyId).get();
+    const agency = doc.exists ? doc.data() : null;
 
     if (!agency || !agency.cart) {
       return res.json({ success: true, cart: [] });
@@ -1209,7 +997,7 @@ app.delete("/api/agency/cart/:itemId", async (req, res) => {
     agency.cart = agency.cart.filter(
       (c) => c.id !== itemId && c.category !== itemId
     );
-    await agenciesContainer.items.upsert(agency);
+    await agenciesCollection.doc(agencyId).set(agency, { merge: true });
 
     res.json({ success: true, cart: agency.cart });
   } catch (err) {
@@ -1224,13 +1012,12 @@ app.delete("/api/agency/cart", async (req, res) => {
     const agencyId = req.query.agencyId;
     if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
+    const doc = await agenciesCollection.doc(agencyId).get();
+    const agency = doc.exists ? doc.data() : null;
 
     if (agency) {
       agency.cart = [];
-      await agenciesContainer.items.upsert(agency);
+      await agenciesCollection.doc(agencyId).set(agency, { merge: true });
     }
 
     res.json({ success: true });
@@ -1248,9 +1035,8 @@ app.get("/api/agency/profile", async (req, res) => {
     const agencyId = req.query.agencyId;
     if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
+    const doc = await agenciesCollection.doc(agencyId).get();
+    const agency = doc.exists ? { id: doc.id, ...doc.data() } : null;
 
     if (!agency) {
       return res.status(404).json({ error: "Agency not found" });
@@ -1278,9 +1064,8 @@ app.put("/api/agency/profile", async (req, res) => {
     const { agencyId, name, phone, website, description, avatar } = req.body;
     if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
+    const doc = await agenciesCollection.doc(agencyId).get();
+    const agency = doc.exists ? { id: doc.id, ...doc.data() } : null;
 
     if (!agency) {
       return res.status(404).json({ error: "Agency not found" });
@@ -1293,7 +1078,7 @@ app.put("/api/agency/profile", async (req, res) => {
     if (description !== undefined) agency.description = description;
     if (avatar !== undefined) agency.avatar = avatar;
 
-    await agenciesContainer.items.upsert(agency);
+    await agenciesCollection.doc(agencyId).set(agency, { merge: true });
 
     res.json({
       success: true,
@@ -1605,8 +1390,7 @@ app.post("/api/process-file", async (req, res) => {
 
         // Classify based on content
         metadata.market_category = await classifyContent(
-          `Code/Text file named ${filename}. Summary: ${
-            aiResult.ai_analysis?.summary || "N/A"
+          `Code/Text file named ${filename}. Summary: ${aiResult.ai_analysis?.summary || "N/A"
           }`
         );
       } else {
@@ -1625,9 +1409,8 @@ app.post("/api/process-file", async (req, res) => {
       metadata.payout = 0.5;
     }
 
-    // Store metadata in Cosmos DB Submissions container
-    const submissionsContainer = database.container("Submissions");
-    await submissionsContainer.items.upsert(metadata);
+    // Store metadata in Firestore
+    await submissionsCollection.doc(metadata.id).set(metadata, { merge: true });
 
     console.log(
       `SUCCESS: File ${filename} processed with Score: ${metadata.quality_score}`
