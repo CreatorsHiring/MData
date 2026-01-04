@@ -23,7 +23,7 @@ A marketplace where data contributors earn rewards for quality datasets, and AI 
 | -------- | ---------------------------------- |
 | Frontend | HTML, CSS, TailwindCSS, Vanilla JS |
 | Backend  | Node.js 20, Express.js             |
-| Database | Firestore DB (NoSQL)            |
+| Database | Firestore DB (NoSQL)               |
 | Storage  | Azure Blob Storage                 |
 | AI       | Azure OpenAI (GPT-4o), Vision AI   |
 | Hosting  | Azure App Service (B1 Linux)       |
@@ -60,8 +60,6 @@ MData/
 npm install
 
 # Create .env file with:
-# COSMOS_ENDPOINT=https://...
-# COSMOS_KEY=...
 # AZURE_STORAGE_CONNECTION_STRING=...
 # SMTP_USER=...
 # SMTP_PASS=...
@@ -88,8 +86,6 @@ GitHub Actions auto-deploys to Azure App Service.
 
 | Variable                          | Purpose            |
 | --------------------------------- | ------------------ |
-| `COSMOS_ENDPOINT`                 | Cosmos DB URL      |
-| `COSMOS_KEY`                      | Cosmos DB key      |
 | `AZURE_STORAGE_CONNECTION_STRING` | Blob storage       |
 | `AZURE_OPENAI_ENDPOINT`           | GPT-4o service     |
 | `AZURE_OPENAI_KEY`                | GPT-4o key         |
@@ -119,7 +115,7 @@ User Browser → Azure App Service (Node.js)
                    ↓
           ┌───────┴───────┐
           ↓               ↓
-    Cosmos DB       Blob Storage
+    Firestore DB       Blob Storage
           ↓               ↓
      Metadata         Files
           ↓
@@ -139,6 +135,10 @@ MIT
 ## 👨‍💻 Author
 
 **Rahul Pujari**
+***Bojja Akash**
 
 - GitHub: [@Rahul-14507](https://github.com/Rahul-14507)
 - Email: pujarirahul.pandu@gmail.com
+
+- GitHub: [@Akash](https://github.com/CreatorsHiring)
+- Email: akashbojja3@gmail.com
