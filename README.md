@@ -135,7 +135,7 @@ MIT
 ## 👨‍💻 Author
 
 **Rahul Pujari**
-***Bojja Akash**
+**Bojja Akash**
 
 - GitHub: [@Rahul-14507](https://github.com/Rahul-14507)
 - Email: pujarirahul.pandu@gmail.com
